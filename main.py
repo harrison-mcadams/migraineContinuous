@@ -2,12 +2,13 @@ import getExperimentParams, runContinuousTrial, random
 
 ## Basic setup params
 experimentName = 'experiment_1a'
+subjectID = 'practiceWithCarlyn'
 debugSingleTrial = True
 useMetropsis = True
 
 trialParams = getExperimentParams.getExperimentParams(experimentName)
 trialParams.update({'segmentLength': 100 / 1000})
-trialParams.update({'subjectID': 'practiceWithCarlyn'})
+trialParams.update({'subjectID': subjectID})
 
 if useMetropsis:
     trialParams.update({'screenNumber': 1})

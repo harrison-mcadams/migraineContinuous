@@ -1,5 +1,6 @@
 def getExperimentParams(experimentName):
-
+    
+    import os
 
 
     trialParams = {
@@ -9,7 +10,7 @@ def getExperimentParams(experimentName):
         'segmentLength': 16/1000, # s
         'trialLength': 60, # s
         'preTrialSegmentLength': 2, # s
-        'savePath': '/Users/harrisonmcadams/Desktop/',
+        'savePath': os.path.expanduser('~') + '/Desktop/',
         'saveFolder': 'migraineContinuous',
         'fullScreen': True
     }

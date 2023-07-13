@@ -2,11 +2,17 @@ import getExperimentParams, runContinuousTrial, random
 
 ## Basic setup params
 experimentName = 'experiment_1a'
-debugSingleTrial: 
+debugSingleTrial = True
 
 trialParams = getExperimentParams.getExperimentParams(experimentName)
 trialParams.update({'segmentLength': 16 / 1000})
 trialParams.update({'subjectID': 'practiceWithCarlyn'})
+
+if debugSingleTrial:
+    trialParams['gaborContrasts'] = [8]
+    trialParams['gaborSpatialFrequencies'] = [1]
+    trialParams['trialRepeats'] = 1
+
 
 randomizeTrialOrder = True
 
@@ -18,7 +24,7 @@ nTrialRepeats = trialParams['trialRepeats']
 paramsAcrossTrials = []
 for cc in range(nContrastLevels):
     for sf in range(nSpatialFrequencyLevels):
-        for rr in range(nTrialRepeats-1):
+        for rr in range(nTrialRepeats):
             paramsAcrossTrials.append([trialParams['gaborContrasts'][cc], trialParams['gaborSpatialFrequencies'][sf]])
 
 if randomizeTrialOrder:

@@ -3,11 +3,13 @@ import getExperimentParams, runContinuousTrial, random
 ## Basic setup params
 experimentName = 'experiment_1a'
 subjectID = 'practiceWithCarlyn'
-debugSingleTrial = True
+segmentLength = 100/1000 # in seconds
+debugSingleTrial = True # If false, will run through different contrasts, spatial frequencies, and repetitions
 useMetropsis = True
 
+## Assemble the params
 trialParams = getExperimentParams.getExperimentParams(experimentName)
-trialParams.update({'segmentLength': 100 / 1000})
+trialParams.update({'segmentLength': segmentLength})
 trialParams.update({'subjectID': subjectID})
 
 if useMetropsis:

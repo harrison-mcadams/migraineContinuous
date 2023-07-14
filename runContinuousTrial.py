@@ -141,10 +141,12 @@ def runContinuousTrial(trialParams):
 
     ## Run the trial
     direction = 1
+    flankerDirection = -1
 
     keyPresses = []
     frameTimes = []
     stimulusDirections = []
+    flankerDirections = []
 
     #kb.clock.reset()
     mywin.frameClock.reset()
@@ -179,6 +181,7 @@ def runContinuousTrial(trialParams):
 
         frameTimes.append(mywin.lastFrameT)
         stimulusDirections.append(direction)
+        flankerDirections.append(flankerDirection)
 
         keys = event.getKeys(timeStamped=logging.defaultClock)
         keyPresses.append(keys)
@@ -222,6 +225,7 @@ def runContinuousTrial(trialParams):
         'responseDirections': responseDirections,
         'stimulusTimes': frameTimes,
         'stimulusDirections': stimulusDirections,
+        'surroundDirections': flankerDirections,
         'trialParams': trialParams
     }
 
@@ -242,9 +246,9 @@ def runContinuousTrial(trialParams):
     g.close()
 
     with open(savePath + startTime + '_SF' + str(trialParams['gaborSpatialFrequency']) + '_C' + str(trialParams['gaborContrast']) + '_stimuli.txt', 'w') as h:
-        h.write('frameTime (s),stimulusDirection\n')
+        h.write('frameTime (s),stimulusDirection, surroundDirection\n')
         for ii in range(len(frameTimes)):
-            h.write(str(frameTimes[ii]) + ',' + str(stimulusDirections[ii]) + '\n')
+            h.write(str(frameTimes[ii]) + ',' + str(stimulusDirections[ii]) + str(flankerDirections[ii]) + '\n')
     h.close()
 
 

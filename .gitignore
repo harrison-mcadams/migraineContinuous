@@ -1,2 +1,6 @@
 *.pyc
 inspectionProfiles
+/__pycache__/analyzeContinuous.cpython-39.pyc
+/__pycache__/getExperimentParams.cpython-39.pyc
+/__pycache__/runContinuousTrial.cpython-39.pyc
+/.idea/workspace.xml

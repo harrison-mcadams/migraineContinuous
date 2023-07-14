@@ -12,7 +12,7 @@ useMetropsis = False
 trialParams = getExperimentParams.getExperimentParams(experimentName)
 trialParams.update({'segmentLength': segmentLength})
 trialParams.update({'subjectID': subjectID})
-trialParams.updated({'viewingDistance': viewingDistance})
+trialParams.update({'viewingDistance': viewingDistance})
 
 if useMetropsis:
     trialParams.update({'screenNumber': 1})

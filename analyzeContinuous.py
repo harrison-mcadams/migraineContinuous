@@ -142,140 +142,82 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
 
     ## Cross correlation
     # Cocatenate center stimuli and response vectors
-    responseVector = []
-    stimulusVector = []
-    for tt in range(nTrials):
-        responseVector.extend(responses[tt])
-        stimulusVector.extend(stimuli[tt])
 
-    correlationSamplingRate = 1/1000
-    slidingDistance = 2 # slide 3 seconds forward, and 3 seconds backward
-    correlationIndices = list(range(round(-slidingDistance*1/samplingRate), round(slidingDistance*1/samplingRate)))
+    for ss in range(2):
+        responseVector = []
+        stimulusVector = []
+        for tt in range(nTrials):
+            responseVector.extend(responses[tt])
+            if ss == 0:
+                stimulusVector.extend(stimuli[tt])
+                stimulusType = 'center'
+            if ss == 1:
+                stimulusVector.extend(surrounds[tt])
+                stimulusType = 'surround'
 
-    correlations = []
-    for ii in correlationIndices:
+        correlationSamplingRate = 1/1000
+        slidingDistance = 2 # slide 3 seconds forward, and 3 seconds backward
+        correlationIndices = list(range(round(-slidingDistance*1/samplingRate), round(slidingDistance*1/samplingRate)))
 
-
-        #stimulusIndicesToDelete = (np.array(range(ii))+1)*-1
-        if ii < 0:
-            stimulusIndicesToDelete = np.array(range(abs(ii)))
-            responseIndicesToDelete = (np.array(range(abs(ii)))+1)*-1
-        elif ii>0:
-            stimulusIndicesToDelete = (np.array(range(ii))+1)*-1
-            responseIndicesToDelete = np.array(range(ii))
-        elif ii>0:
-            stimulusIndicesToDelete = []
-            responseIndicesToDelete = []
+        correlations = []
+        for ii in correlationIndices:
 
 
-        shiftedStimulus = np.delete(stimulusVector, stimulusIndicesToDelete)
+            #stimulusIndicesToDelete = (np.array(range(ii))+1)*-1
+            if ii < 0:
+                stimulusIndicesToDelete = np.array(range(abs(ii)))
+                responseIndicesToDelete = (np.array(range(abs(ii)))+1)*-1
+            elif ii>0:
+                stimulusIndicesToDelete = (np.array(range(ii))+1)*-1
+                responseIndicesToDelete = np.array(range(ii))
+            elif ii>0:
+                stimulusIndicesToDelete = []
+                responseIndicesToDelete = []
 
-        trimmedResponse = np.delete(responseVector, responseIndicesToDelete)
 
-        corr = np.corrcoef(trimmedResponse, shiftedStimulus)
-        correlations.append(corr[0,1])
+            shiftedStimulus = np.delete(stimulusVector, stimulusIndicesToDelete)
 
-    correlationTimebase = np.array(correlationIndices)*samplingRate
+            trimmedResponse = np.delete(responseVector, responseIndicesToDelete)
+
+            corr = np.corrcoef(trimmedResponse, shiftedStimulus)
+            correlations.append(corr[0,1])
+
+        correlationTimebase = np.array(correlationIndices)*samplingRate
 
 
-    maxCorrelation = max(correlations)
-    maxCorrelationRounded = round(maxCorrelation, 3)
-    indexOfMaxCorrelation = correlations.index(maxCorrelation)
-    shift = correlationTimebase[indexOfMaxCorrelation]
+        maxCorrelation = max(correlations)
+        maxCorrelationRounded = round(maxCorrelation, 3)
+        indexOfMaxCorrelation = correlations.index(maxCorrelation)
+        shift = correlationTimebase[indexOfMaxCorrelation]
 
-    # Fit a Gaussian to cross correlogram
+        # Fit a Gaussian to cross correlogram
 
-    def func(x, lag, width, peak):
-        return visual.filters.makeGauss(x, mean=lag, sd=width, gain=peak, base=0)
+        def func(x, lag, width, peak):
+            return visual.filters.makeGauss(x, mean=lag, sd=width, gain=peak, base=0)
 
-    # Do the fit
-    popt, pcov = curve_fit(func, correlationTimebase, correlations, bounds=([-1.5, 0, -1], [2, 0.5, 1]))
-    lag = popt[0]
-    width_sigma = popt[1]
-    width_fwhm = width_sigma * ((8*np.log(2))**0.5)
-    peak = popt[2]
-    peak_rounded = round(peak,3)
-    width_fwhm_rounded = round(width_fwhm, 3)
-    lag_rounded = round(lag, 3)
+        # Do the fit
+        popt, pcov = curve_fit(func, correlationTimebase, correlations, bounds=([0, 0, -1], [2, 0.5, 1]))
+        lag = popt[0]
+        width_sigma = popt[1]
+        width_fwhm = width_sigma * ((8*np.log(2))**0.5)
+        peak = popt[2]
+        peak_rounded = round(peak,3)
+        width_fwhm_rounded = round(width_fwhm, 3)
+        lag_rounded = round(lag, 3)
 
-    plt.plot(correlationTimebase, correlations, label='CCG')
-    plt.plot(correlationTimebase, func(correlationTimebase, *popt), label='Fit')
-    plt.legend()
-    plt.title('Peak: ' + str(peak_rounded) + ', Lag: ' + str(lag_rounded) + ', Width: ' + str(width_fwhm_rounded))
-    # Note that positive time means shifting the stimulus forward in time relative to a stationary response time series
+        plt.plot(correlationTimebase, correlations, label='CCG')
+        plt.plot(correlationTimebase, func(correlationTimebase, *popt), label='Fit')
+        plt.legend()
+        plt.title('Peak: ' + str(peak_rounded) + ', Lag: ' + str(lag_rounded) + ', Width: ' + str(width_fwhm_rounded))
+        # Note that positive time means shifting the stimulus forward in time relative to a stationary response time series
 
-    savePath = savePathRoot + '/' + experimentName + '/' + subjectID + '/'
-    if not os.path.exists(savePath):
-        os.makedirs(savePath)
-    plt.savefig(savePath + 'SF' + str(spatialFrequency) + '_C' + str(contrast) + '_crossCorrelation_center.png')
-    plt.close()
+        savePath = savePathRoot + '/' + experimentName + '/' + subjectID + '/'
+        if not os.path.exists(savePath):
+            os.makedirs(savePath)
+        plt.savefig(savePath + 'SF' + str(spatialFrequency) + '_C' + str(contrast) + '_crossCorrelation_' + stimulusType + '.png')
+        plt.close()
 
-    # Now for surround
-    responseVector = []
-    stimulusVector = []
-    for tt in range(nTrials):
-        responseVector.extend(responses[tt])
-        stimulusVector.extend(surrounds[tt])
 
-    correlationSamplingRate = 1 / 1000
-    slidingDistance = 2  # slide 3 seconds forward, and 3 seconds backward
-    correlationIndices = list(
-        range(round(-slidingDistance * 1 / samplingRate), round(slidingDistance * 1 / samplingRate)))
-
-    correlations = []
-    for ii in correlationIndices:
-
-        # stimulusIndicesToDelete = (np.array(range(ii))+1)*-1
-        if ii < 0:
-            stimulusIndicesToDelete = np.array(range(abs(ii)))
-            responseIndicesToDelete = (np.array(range(abs(ii))) + 1) * -1
-        elif ii > 0:
-            stimulusIndicesToDelete = (np.array(range(ii)) + 1) * -1
-            responseIndicesToDelete = np.array(range(ii))
-        elif ii > 0:
-            stimulusIndicesToDelete = []
-            responseIndicesToDelete = []
-
-        shiftedStimulus = np.delete(stimulusVector, stimulusIndicesToDelete)
-
-        trimmedResponse = np.delete(responseVector, responseIndicesToDelete)
-
-        corr = np.corrcoef(trimmedResponse, shiftedStimulus)
-        correlations.append(corr[0, 1])
-
-    correlationTimebase = np.array(correlationIndices) * samplingRate
-
-    maxCorrelation = max(correlations)
-    maxCorrelationRounded = round(maxCorrelation, 3)
-    indexOfMaxCorrelation = correlations.index(maxCorrelation)
-    shift = correlationTimebase[indexOfMaxCorrelation]
-
-    # Fit a Gaussian to cross correlogram
-
-    def func(x, lag, width, peak):
-        return visual.filters.makeGauss(x, mean=lag, sd=width, gain=peak, base=0)
-
-    # Do the fit
-    popt, pcov = curve_fit(func, correlationTimebase, correlations, bounds=([-1.5, 0, -1], [2, 0.5, 1]))
-    lag = popt[0]
-    width_sigma = popt[1]
-    width_fwhm = width_sigma * ((8 * np.log(2)) ** 0.5)
-    peak = popt[2]
-    peak_rounded = round(peak, 3)
-    width_fwhm_rounded = round(width_fwhm, 3)
-    lag_rounded = round(lag, 3)
-
-    plt.plot(correlationTimebase, correlations, label='CCG')
-    plt.plot(correlationTimebase, func(correlationTimebase, *popt), label='Fit')
-    plt.legend()
-    plt.title('Peak: ' + str(peak_rounded) + ', Lag: ' + str(lag_rounded) + ', Width: ' + str(width_fwhm_rounded))
-    # Note that positive time means shifting the stimulus forward in time relative to a stationary response time series
-
-    savePath = savePathRoot + '/' + experimentName + '/' + subjectID + '/'
-    if not os.path.exists(savePath):
-        os.makedirs(savePath)
-    plt.savefig(savePath + 'SF' + str(spatialFrequency) + '_C' + str(contrast) + '_crossCorrelation_surround.png')
-    plt.close()
 
 
     print('yay')

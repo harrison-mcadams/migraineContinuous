@@ -5,6 +5,9 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
     import numpy as np
     import matplotlib.pyplot as plt
     import os
+    from psychopy import visual
+    from scipy.optimize import curve_fit
+
 
     ## Establish analysis parameters
     debugPlotting = False
@@ -156,15 +159,24 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
         correlations.append(corr[0,1])
 
     correlationTimebase = np.array(correlationIndices)*samplingRate
-    plt.plot(correlationTimebase, correlations)
+
 
     maxCorrelation = max(correlations)
     maxCorrelationRounded = round(maxCorrelation, 3)
     indexOfMaxCorrelation = correlations.index(maxCorrelation)
     shift = correlationTimebase[indexOfMaxCorrelation]
 
+    # Fit a Gaussian to cross correlogram
+
+    def func(x, lag, width, peak):
+        return visual.filters.makeGauss(x, mean=lag, sd=width, gain=peak, base=0)
+
+    popt, pcov = curve_fit(func, correlationTimebase, correlations)
+
+    plt.plot(correlationTimebase, correlations)
+    plt.plot(correlationTimebase, func(correlationTimebase, *popt))
     plt.title('Maximum correlation: ' + str(maxCorrelationRounded) + ' at ' + str(shift) + ' s')
-        # Note that positive time means shifting the stimulus forward in time relative to a stationary response time series
+    # Note that positive time means shifting the stimulus forward in time relative to a stationary response time series
 
     savePath = savePathRoot + '/' + experimentName + '/' + subjectID + '/'
     if not os.path.exists(savePath):
@@ -173,5 +185,6 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
     plt.close()
 
     corr = np.corrcoef(responses[0], stimuli[0])
+
 
     print('yay')

@@ -16,7 +16,7 @@ def runContinuousTrial(trialParams):
     logging.setDefaultClock(clock.Clock())
     units = 'cm'
     #mywin = visual.Window(fullscr=trialParams['fullScreen'], monitor='testMonitor', units=units)
-    mywin = visual.Window(fullscr=trialParams['fullScreen'], monitor='testMonitor', screen=1, units=units)
+    mywin = visual.Window(fullscr=trialParams['fullScreen'], monitor='testMonitor', screen=trialParams['screenNumber'], units=units)
 
     #mywin = visual.Window([800,600], monitor='testMonitor', units=units)
     trialParams.update({'units': units})

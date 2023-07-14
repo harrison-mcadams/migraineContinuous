@@ -45,7 +45,7 @@ def runContinuousTrial(trialParams):
     # Design the main center grating
 
     # Make Gaussian to be applied as mask
-    lengthOfMask = 256
+    lengthOfMask = 1024
     gaussianFWHM_cm = (2*trialParams['viewingDistance']*np.tan(np.deg2rad(trialParams['gaussianFWHM'])))
     gaussianSigma_cm = gaussianFWHM_cm/((8*np.log(2))**0.5)
     gaussianSigma = gaussianSigma_cm*lengthOfMask/screenWidth_cm
@@ -183,9 +183,12 @@ def runContinuousTrial(trialParams):
         stimulusDirections.append(direction)
         flankerDirections.append(flankerDirection)
 
-        keys = event.getKeys(timeStamped=logging.defaultClock)
+        keys = event.getKeys(timeStamped=logging.defaultClock, keyList=['q', 'escape', 'left', 'right'])
         keyPresses.append(keys)
         event.clearEvents()
+        for key in keys:
+            if 'q' in key or 'escape' in key:
+                core.quit()
 
 
 

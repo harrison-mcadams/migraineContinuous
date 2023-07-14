@@ -48,4 +48,15 @@ def getExperimentParams(experimentName):
             'speed': 3.75  # Hz
         })
 
+    if trialParams['experimentLabel'] == 'experiment_2_simplified':
+        trialParams.update({
+            'centerGaborSize': 2, # degrees
+            'surroundGaborSize': 2, # degrees
+            'gaborContrasts': [1, 16], # % Michelson contrast
+            'gaborSpatialFrequencies': [1], # cycles/degree
+            'trialRepeats': 3,
+            'gaussianFWHM': 0.35, # degrees
+            'speed': 3.75  # Hz
+        })
+
     return trialParams

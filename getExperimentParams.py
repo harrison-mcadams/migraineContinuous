@@ -52,7 +52,7 @@ def getExperimentParams(experimentName):
         trialParams.update({
             'centerGaborSize': 2, # degrees
             'surroundGaborSize': 2, # degrees
-            'gaborContrasts': [1, 16], # % Michelson contrast
+            'gaborContrasts': [16], # % Michelson contrast
             'gaborSpatialFrequencies': [1], # cycles/degree
             'trialRepeats': 3,
             'gaussianFWHM': 0.35, # degrees

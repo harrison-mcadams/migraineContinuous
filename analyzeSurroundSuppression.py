@@ -1,8 +1,11 @@
 import analyzeContinuous
 
-subjectID = 'experiment_2_practice'
+subjectID = '500ms'
 experimentName = 'experiment_2_simplified'
-contrast = 8
+contrast = 16
 spatialFrequency = 1
 
+analyzeContinuous.analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency)
+
+contrast = 2
 analyzeContinuous.analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency)

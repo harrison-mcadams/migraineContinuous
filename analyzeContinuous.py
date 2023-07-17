@@ -11,13 +11,13 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
 
     ## Establish analysis parameters
     debugPlotting = False
-    savePathRoot = '/Users/harrisonmcadams/Desktop/migraineContinuous/analysis/'
+    savePathRoot = '/Users/carlynpattersongentile/Desktop/migraineContinuous/analysis/'
 
 
     samplingRate = 1/1000
 
     ## Load the relevant trials
-    dataPath = '/Users/harrisonmcadams/Desktop/migraineContinuous/data/'
+    dataPath = '/Users/carlynpattersongentile/Desktop/migraineContinuous/data/'
 
     # Find the trials
     relevantTrialFiles = glob.glob(dataPath + '/' + experimentName + '/' + subjectID + '/**/*SF' + str(spatialFrequency) + '_C' + str(contrast) + '_raw.pkl', recursive=True)
@@ -48,9 +48,9 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
         # Clean up the responses. 'Left' corresponds to 1, 'Right' corresponds to -1
         responseValues = []
         for ii in trialData[tt]['responseDirections']:
-            if ii == 'left':
+            if ii == 'left' or ii == 'a':
                 responseValues.append(-1)
-            elif ii == 'right':
+            elif ii == 'right' or ii == 'd':
                 responseValues.append(1)
 
         trialTimebase = list(range(0, round(np.floor((stimulusEndTime-stimulusStartTime)*1/samplingRate))))
@@ -185,7 +185,7 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
         correlationTimebase = np.array(correlationIndices)*samplingRate
 
 
-        maxCorrelation = max(correlations)
+        maxCorrelation = max(correlations, key=abs)
         maxCorrelationRounded = round(maxCorrelation, 3)
         indexOfMaxCorrelation = correlations.index(maxCorrelation)
         shift = correlationTimebase[indexOfMaxCorrelation]
@@ -196,7 +196,7 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
             return visual.filters.makeGauss(x, mean=lag, sd=width, gain=peak, base=0)
 
         # Do the fit
-        popt, pcov = curve_fit(func, correlationTimebase, correlations, bounds=([0, 0, -1], [2, 0.5, 1]))
+        popt, pcov = curve_fit(func, correlationTimebase, correlations, p0=[shift, 0.4, maxCorrelation], bounds=([-2, 0, -1], [2, 0.5, 1]))
         lag = popt[0]
         width_sigma = popt[1]
         width_fwhm = width_sigma * ((8*np.log(2))**0.5)
@@ -219,5 +219,5 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
 
 
 
-
+    return peak, lag, width_fwhm
     print('yay')

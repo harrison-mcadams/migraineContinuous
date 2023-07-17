@@ -183,7 +183,7 @@ def runContinuousTrial(trialParams):
         stimulusDirections.append(direction)
         flankerDirections.append(flankerDirection)
 
-        keys = event.getKeys(timeStamped=logging.defaultClock, keyList=['q', 'escape', 'left', 'right'])
+        keys = event.getKeys(timeStamped=logging.defaultClock, keyList=['q', 'escape', 'left', 'right', 'a', 'd'])
         keyPresses.append(keys)
         event.clearEvents()
         for key in keys:

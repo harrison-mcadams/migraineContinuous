@@ -216,8 +216,17 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
             os.makedirs(savePath)
         plt.savefig(savePath + 'SF' + str(spatialFrequency) + '_C' + str(contrast) + '_crossCorrelation_' + stimulusType + '.png')
         plt.close()
+        
+        if ss == 0:
+            centerPeak = peak
+            centerLag = lag
+            centerWidth = width_fwhm
+        
+        elif ss == 1:
+            surroundPeak = peak
+            surroundLag = lag
+            surroundWidth = width_fwhm
 
 
-
-    return peak, lag, width_fwhm
-    print('yay')
+    return centerPeak, centerLag, centerWidth, surroundPeak, surroundLag, surroundWidth
+    

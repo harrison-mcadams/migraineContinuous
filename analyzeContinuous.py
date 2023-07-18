@@ -10,7 +10,7 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
 
 
     ## Establish analysis parameters
-    debugPlotting = True
+    debugPlotting = False
     savePathRoot = os.path.expanduser('~') + '/Desktop/migraineContinuous/analysis/'
     savePath = savePathRoot + '/' + experimentName + '/' + subjectID + '/'
 
@@ -185,7 +185,7 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
             return visual.filters.makeGauss(x, mean=lag, sd=width, gain=peak, base=0)
 
         # Do the fit
-        popt, pcov = curve_fit(func, correlationTimebase, correlations, p0=[shift, 0.4, maxCorrelation], bounds=([-2, 0, -1], [2, 0.5, 1]))
+        popt, pcov = curve_fit(func, correlationTimebase, correlations, p0=[shift, 0.4, maxCorrelation], bounds=([0, 0, -1], [2, 0.5, 1]))
         lag = popt[0]
         width_sigma = popt[1]
         width_fwhm = width_sigma * ((8*np.log(2))**0.5)

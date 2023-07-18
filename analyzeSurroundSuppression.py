@@ -2,9 +2,9 @@ import analyzeContinuous
 import matplotlib.pyplot as plt
 import numpy as np
 
-subjectID = 'harry_200ms'
+subjectID = 'harry_100ms'
 experimentName = 'experiment_2_simplified'
-contrasts = [92]
+contrasts = [1, 2, 4, 8, 16]
 spatialFrequency = 1
 
 centerPeaks = []
@@ -20,3 +20,7 @@ for cc in contrasts:
 plt.plot(np.log(contrasts), centerPeaks, label='Center')
 plt.plot(np.log(contrasts), surroundPeaks, label='Surround')
 plt.legend()
+plt.xlabel('Contrast (%)')
+plt.ylabel('Kernel Peak (r)')
+plt.xticks(np.log(contrasts), contrasts)
+plt.savefig('/Users/carlynpattersongentile/Desktop/migraineContinuous/analysis/' + experimentName + '/' + subjectID + '/CRF.png')

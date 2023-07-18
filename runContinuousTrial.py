@@ -75,8 +75,8 @@ def runContinuousTrial(trialParams):
 
     # Make the surround gratings
     surroundHeight_cm = 2 * trialParams['viewingDistance'] * np.tan(np.deg2rad(trialParams['surroundGaborSize']/2))
-    upperSurroundGrating = visual.GratingStim(win=mywin, mask=mask, units=units, size=(screenWidth_cm, surroundHeight_cm), pos=[0,surroundHeight_cm], sf=stimulusFrequency_cyclesPerCM, contrast=trialParams['gaborContrast']/100)
-    lowerSurroundGrating = visual.GratingStim(win=mywin, mask=mask, units=units, size=(screenWidth_cm, surroundHeight_cm), pos=[0,-surroundHeight_cm], sf=stimulusFrequency_cyclesPerCM, contrast=trialParams['gaborContrast']/100)
+    upperSurroundGrating = visual.GratingStim(win=mywin, mask=mask, units=units, size=(screenWidth_cm, surroundHeight_cm), pos=[0,surroundHeight_cm/2+stimulusHeight_cm/2], sf=stimulusFrequency_cyclesPerCM, contrast=trialParams['gaborContrast']/100)
+    lowerSurroundGrating = visual.GratingStim(win=mywin, mask=mask, units=units, size=(screenWidth_cm, surroundHeight_cm), pos=[0,-(surroundHeight_cm/2+stimulusHeight_cm/2)], sf=stimulusFrequency_cyclesPerCM, contrast=trialParams['gaborContrast']/100)
 
 
     # Make the fixation point

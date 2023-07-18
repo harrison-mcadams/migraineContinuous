@@ -56,12 +56,11 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
         trialTimebase = list(range(0, round(np.floor((stimulusEndTime-stimulusStartTime)*1/samplingRate))))
         timebases.append(trialTimebase)
 
-        stimulusIndex = 0
-        responseIndex = 0
-        surroundIndex = 0
-
         stimulusValues_resampled = []
+        surroundValues_resampled = []
+        responseValues_resampled = []
 
+        nanValues = []
 
 
         for timepoint in trialTimebase:
@@ -71,39 +70,24 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
             else:
                 stimulusValues_resampled.append(trialData[tt]['stimulusDirections'][indexInQuestion])
 
-        stimuli.append((np.array(stimulusValues_resampled) + 1) / 2)
-
-        surroundValues_resampled = []
-        for timepoint in trialTimebase:
-            if surroundIndex >= len(trialData[tt]['stimulusTimes']) - 1:
-                surroundValues_resampled.append(trialData[tt]['surroundDirections'][-1])
+            indexInQuestion = np.argmin(np.abs(trialData[tt]['stimulusTimes'] - timepoint*samplingRate))
+            if timepoint*samplingRate < trialData[tt]['stimulusTimes'][indexInQuestion]:
+                surroundValues_resampled.append(trialData[tt]['surroundDirections'][indexInQuestion-1])
             else:
-                if timepoint*samplingRate >= trialData[tt]['stimulusTimes'][surroundIndex] and timepoint*samplingRate < trialData[tt]['stimulusTimes'][surroundIndex+1]:
-                    surroundValues_resampled.append(trialData[tt]['surroundDirections'][surroundIndex])
-                elif timepoint*samplingRate >= trialData[tt]['stimulusTimes'][surroundIndex + 1]:
-                    surroundValues_resampled.append(trialData[tt]['surroundDirections'][surroundIndex+1])
+                surroundValues_resampled.append(trialData[tt]['surroundDirections'][indexInQuestion])
 
-                    surroundIndex = surroundIndex + 1
-        #stimuli.append(stimulusValues_resampled)
-        surrounds.append((np.array(surroundValues_resampled) + 1) / 2)
-
-        nanValues = []
-        responseValues_resampled = []
-        for timepoint in trialTimebase:
-            if responseIndex >= len(trialData[tt]['responseTimes']) - 1:
-                responseValues_resampled.append(responseValues[-1])
+            if timepoint*samplingRate < trialData[tt]['responseTimes'][0]:
+                responseValues_resampled.append(np.nan)
+                nanValues.append(timepoint)
             else:
-                if timepoint*samplingRate >= trialData[tt]['responseTimes'][responseIndex] and timepoint*samplingRate < trialData[tt]['responseTimes'][responseIndex+1]:
-                    responseValues_resampled.append(responseValues[responseIndex])
-                elif timepoint*samplingRate >= trialData[tt]['responseTimes'][responseIndex + 1]:
-                    responseValues_resampled.append(responseValues[responseIndex+1])
-                    responseIndex = responseIndex + 1
+                indexInQuestion = np.argmin(np.abs(trialData[tt]['responseTimes'] - timepoint * samplingRate))
+                if timepoint * samplingRate < trialData[tt]['responseTimes'][indexInQuestion]:
+                    responseValues_resampled.append(responseValues[indexInQuestion - 1])
                 else:
-                    responseValues_resampled.append(np.nan)
-                    nanValues.append(timepoint)
+                    responseValues_resampled.append(responseValues[indexInQuestion])
 
-
-        #responses.append(responseValues_resampled)
+        stimuli.append((np.array(stimulusValues_resampled) + 1) / 2)
+        surrounds.append((np.array(surroundValues_resampled) + 1) / 2)
         responses.append((np.array(responseValues_resampled)+1)/2)
 
 

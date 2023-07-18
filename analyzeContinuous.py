@@ -173,8 +173,8 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
 
         correlationTimebase = np.array(correlationIndices)*samplingRate
 
-
-        maxCorrelation = max(correlations, key=abs)
+        time0 = np.argmin(np.abs(np.array(correlationTimebase) - 0))
+        maxCorrelation = max(correlations[time0:-1], key=abs)
         maxCorrelationRounded = round(maxCorrelation, 3)
         indexOfMaxCorrelation = correlations.index(maxCorrelation)
         shift = correlationTimebase[indexOfMaxCorrelation]
@@ -194,10 +194,15 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
         width_fwhm_rounded = round(width_fwhm, 3)
         lag_rounded = round(lag, 3)
 
+        from sklearn.metrics import r2_score
+        y_pred = func(correlationTimebase, *popt)
+        r2 = r2_score(correlations, y_pred)
+        r2_rounded = round(r2, 3)
+
         plt.plot(correlationTimebase, correlations, label='CCG')
         plt.plot(correlationTimebase, func(correlationTimebase, *popt), label='Fit')
         plt.legend()
-        plt.title('Peak: ' + str(peak_rounded) + ', Lag: ' + str(lag_rounded) + ', Width: ' + str(width_fwhm_rounded))
+        plt.title('Peak: ' + str(peak_rounded) + ', Lag: ' + str(lag_rounded) + ', Width: ' + str(width_fwhm_rounded) + ', R2 = ' + str(r2_rounded))
         # Note that positive time means shifting the stimulus forward in time relative to a stationary response time series
 
         if not os.path.exists(savePath):

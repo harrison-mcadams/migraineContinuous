@@ -42,22 +42,31 @@ def runContinuousTrial(trialParams):
     totalFrames = round(duration * frameRate)
 
     ## Design the visual stimuli
-    # Design the main center grating
-
-    # Make Gaussian to be applied as mask
-    lengthOfMask = 1024
-    gaussianFWHM_cm = (2*trialParams['viewingDistance']*np.tan(np.deg2rad(trialParams['gaussianFWHM'])))
-    gaussianSigma_cm = gaussianFWHM_cm/((8*np.log(2))**0.5)
-    gaussianSigma = gaussianSigma_cm*lengthOfMask/screenWidth_cm
-
-    y = visual.filters.makeGauss(np.array(range(lengthOfMask)), mean=lengthOfMask/2, sd=gaussianSigma, gain=2.0, base=-1.0)
-    mask = np.tile(y, (lengthOfMask,1))
-
     # Make the center grating
     stimulusHeight_cm = 2 * trialParams['viewingDistance'] * np.tan(np.deg2rad(trialParams['centerGaborSize']/2))
     stimulusFrequency_cyclesPerCM =  2 * trialParams['viewingDistance'] * np.tan(np.deg2rad(trialParams['gaborSpatialFrequency']/2))
     centerPosition = [0,0]
-    grating = visual.GratingStim(win=mywin, mask=mask, units=units, size=(screenWidth_cm, stimulusHeight_cm), pos=centerPosition, sf=stimulusFrequency_cyclesPerCM, contrast=trialParams['gaborContrast']/100)
+
+    # Make Gaussian to be applied as mask
+    if trialParams['maskShape'] == 'horizontalGaussian':
+        lengthOfMask = 1024
+        gaussianFWHM_cm = (2*trialParams['viewingDistance']*np.tan(np.deg2rad(trialParams['gaussianFWHM'])))
+        gaussianSigma_cm = gaussianFWHM_cm/((8*np.log(2))**0.5)
+        gaussianSigma = gaussianSigma_cm*lengthOfMask/screenWidth_cm
+
+        y = visual.filters.makeGauss(np.array(range(lengthOfMask)), mean=lengthOfMask/2, sd=gaussianSigma, gain=2.0, base=-1.0)
+        mask = np.tile(y, (lengthOfMask,1))
+        stimulusWidth_cm = screenWidth_cm
+    elif trialParams['maskShape'] == 'circle':
+        mask = 'circle'
+        lengthOfMask = np.nan
+        stimulusWidth_cm = stimulusHeight_cm
+
+
+    grating = visual.GratingStim(win=mywin, mask=mask, units=units, size=(stimulusWidth_cm, stimulusHeight_cm), pos=centerPosition, sf=stimulusFrequency_cyclesPerCM, contrast=trialParams['gaborContrast']/100)
+
+    annulusHeight_cm = 2 * trialParams['viewingDistance'] * np.tan(np.deg2rad(trialParams['centerAnnulusSize']/2))
+    annulus = visual.GratingStim(win=mywin, mask=mask, units=units, size=(annulusHeight_cm, annulusHeight_cm), pos=centerPosition, sf=stimulusFrequency_cyclesPerCM, contrast=trialParams['gaborContrast']/100)
     trialParams.update({
         'stimulusHeight_cm': stimulusHeight_cm,
         'stimulsuFrequency_cyclesPerCM': stimulusFrequency_cyclesPerCM,
@@ -80,6 +89,7 @@ def runContinuousTrial(trialParams):
     ### START THE TRIAL
     ## Pre-trial activity
     # Get initial figures on screen
+    annulus.draw()
     grating.draw()
     upperSurroundGrating.draw()
     lowerSurroundGrating.draw()
@@ -101,7 +111,8 @@ def runContinuousTrial(trialParams):
     direction = 1
     flankerDirection = -1
     for ii in range(preTrialFrames):
-
+        annulus.setPhase(flankerDirection * trialParams['speed'] / frameRate, '+')  # advance phase by 0.05 of a cycle
+        annulus.draw()
 
         grating.setPhase(direction * trialParams['speed'] / frameRate, '+')  # advance phase by 0.05 of a cycle
         grating.draw()
@@ -118,6 +129,9 @@ def runContinuousTrial(trialParams):
     direction = -1
     flankerDirection = 1
     for ii in range(preTrialFrames):
+        annulus.setPhase(flankerDirection * trialParams['speed'] / frameRate, '+')  # advance phase by 0.05 of a cycle
+        annulus.draw()
+
         grating.setPhase(direction * trialParams['speed'] / frameRate, '+')  # advance phase by 0.05 of a cycle
         grating.draw()
 
@@ -133,6 +147,7 @@ def runContinuousTrial(trialParams):
         mywin.flip()
 
     for ii in range(preTrialFrames):
+        annulus.draw()
         upperSurroundGrating.draw()
         lowerSurroundGrating.draw()
         grating.draw()
@@ -160,7 +175,7 @@ def runContinuousTrial(trialParams):
             direction = random.randint(0,1)*2 - 1
             flankerDirection  = random.randint(0,1)*2 - 1
 
-
+        annulus.setPhase(flankerDirection * trialParams['speed']/frameRate, '+')
         grating.setPhase(direction * trialParams['speed']/frameRate, '+')  # advance phase by 0.05 of a cycle
         #grating.phase = grating.phase + direction * trialParams['speed']/frameRate
         #grating.phase = direction
@@ -168,6 +183,7 @@ def runContinuousTrial(trialParams):
         upperSurroundGrating.setPhase(flankerDirection * trialParams['speed']/frameRate, '+')
         lowerSurroundGrating.setPhase(flankerDirection * trialParams['speed']/frameRate, '+')
 
+        annulus.draw()
         grating.draw(mywin)
         upperSurroundGrating.draw(mywin)
         lowerSurroundGrating.draw(mywin)

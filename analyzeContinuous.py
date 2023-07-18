@@ -11,13 +11,13 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
 
     ## Establish analysis parameters
     debugPlotting = False
-    savePathRoot = '/Users/carlynpattersongentile/Desktop/migraineContinuous/analysis/'
+    savePathRoot = '/Users/harrisonmcadams/Desktop/migraineContinuous/analysis/'
 
 
-    samplingRate = 1/1000
+    samplingRate = 1/100
 
     ## Load the relevant trials
-    dataPath = '/Users/carlynpattersongentile/Desktop/migraineContinuous/data/'
+    dataPath = '/Users/harrisonmcadams/Desktop/migraineContinuous/data/'
 
     # Find the trials
     relevantTrialFiles = glob.glob(dataPath + '/' + experimentName + '/' + subjectID + '/**/*SF' + str(spatialFrequency) + '_C' + str(contrast) + '_raw.pkl', recursive=True)
@@ -65,9 +65,9 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
             if stimulusIndex >= len(trialData[tt]['stimulusTimes']) - 1:
                 stimulusValues_resampled.append(trialData[tt]['stimulusDirections'][-1])
             else:
-                if timepoint/1000 >= trialData[tt]['stimulusTimes'][stimulusIndex] and timepoint/1000 < trialData[tt]['stimulusTimes'][stimulusIndex+1]:
+                if timepoint*samplingRate >= trialData[tt]['stimulusTimes'][stimulusIndex] and timepoint*samplingRate < trialData[tt]['stimulusTimes'][stimulusIndex+1]:
                     stimulusValues_resampled.append(trialData[tt]['stimulusDirections'][stimulusIndex])
-                elif timepoint/1000 >= trialData[tt]['stimulusTimes'][stimulusIndex + 1]:
+                elif timepoint*samplingRate >= trialData[tt]['stimulusTimes'][stimulusIndex + 1]:
                     stimulusValues_resampled.append(trialData[tt]['stimulusDirections'][stimulusIndex+1])
 
                     stimulusIndex = stimulusIndex + 1
@@ -79,9 +79,9 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
             if surroundIndex >= len(trialData[tt]['stimulusTimes']) - 1:
                 surroundValues_resampled.append(trialData[tt]['surroundDirections'][-1])
             else:
-                if timepoint/1000 >= trialData[tt]['stimulusTimes'][surroundIndex] and timepoint/1000 < trialData[tt]['stimulusTimes'][surroundIndex+1]:
+                if timepoint*samplingRate >= trialData[tt]['stimulusTimes'][surroundIndex] and timepoint*samplingRate < trialData[tt]['stimulusTimes'][surroundIndex+1]:
                     surroundValues_resampled.append(trialData[tt]['surroundDirections'][surroundIndex])
-                elif timepoint/1000 >= trialData[tt]['stimulusTimes'][surroundIndex + 1]:
+                elif timepoint*samplingRate >= trialData[tt]['stimulusTimes'][surroundIndex + 1]:
                     surroundValues_resampled.append(trialData[tt]['surroundDirections'][surroundIndex+1])
 
                     surroundIndex = surroundIndex + 1
@@ -94,9 +94,9 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
             if responseIndex >= len(trialData[tt]['responseTimes']) - 1:
                 responseValues_resampled.append(responseValues[-1])
             else:
-                if timepoint/1000 >= trialData[tt]['responseTimes'][responseIndex] and timepoint/1000 < trialData[tt]['responseTimes'][responseIndex+1]:
+                if timepoint*samplingRate >= trialData[tt]['responseTimes'][responseIndex] and timepoint*samplingRate < trialData[tt]['responseTimes'][responseIndex+1]:
                     responseValues_resampled.append(responseValues[responseIndex])
-                elif timepoint/1000 >= trialData[tt]['responseTimes'][responseIndex + 1]:
+                elif timepoint*samplingRate >= trialData[tt]['responseTimes'][responseIndex + 1]:
                     responseValues_resampled.append(responseValues[responseIndex+1])
                     responseIndex = responseIndex + 1
                 else:
@@ -155,7 +155,7 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
                 stimulusVector.extend(surrounds[tt])
                 stimulusType = 'surround'
 
-        correlationSamplingRate = 1/1000
+        correlationSamplingRate = samplingRate
         slidingDistance = 2 # slide 3 seconds forward, and 3 seconds backward
         correlationIndices = list(range(round(-slidingDistance*1/samplingRate), round(slidingDistance*1/samplingRate)))
 
@@ -170,7 +170,7 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
             elif ii>0:
                 stimulusIndicesToDelete = (np.array(range(ii))+1)*-1
                 responseIndicesToDelete = np.array(range(ii))
-            elif ii>0:
+            elif ii==0:
                 stimulusIndicesToDelete = []
                 responseIndicesToDelete = []
 

@@ -10,14 +10,14 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
 
 
     ## Establish analysis parameters
-    debugPlotting = False
-    savePathRoot = '/Users/carlynpattersongentile/Desktop/migraineContinuous/analysis/'
+    debugPlotting = True
+    savePathRoot = '/Users/harrisonmcadams/Desktop/migraineContinuous/analysis/'
+    savePath = savePathRoot + '/' + experimentName + '/' + subjectID + '/'
 
-
-    samplingRate = 1/1000
+    samplingRate = 1/100
 
     ## Load the relevant trials
-    dataPath = '/Users/carlynpattersongentile/Desktop/migraineContinuous/data/'
+    dataPath = '/Users/harrisonmcadams/Desktop/migraineContinuous/data/'
 
     # Find the trials
     relevantTrialFiles = glob.glob(dataPath + '/' + experimentName + '/' + subjectID + '/**/*SF' + str(spatialFrequency) + '_C' + str(contrast) + '_raw.pkl', recursive=True)
@@ -56,55 +56,38 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
         trialTimebase = list(range(0, round(np.floor((stimulusEndTime-stimulusStartTime)*1/samplingRate))))
         timebases.append(trialTimebase)
 
-        stimulusIndex = 0
-        responseIndex = 0
-        surroundIndex = 0
-
         stimulusValues_resampled = []
-        for timepoint in trialTimebase:
-            if stimulusIndex >= len(trialData[tt]['stimulusTimes']) - 1:
-                stimulusValues_resampled.append(trialData[tt]['stimulusDirections'][-1])
-            else:
-                if timepoint/1000 >= trialData[tt]['stimulusTimes'][stimulusIndex] and timepoint/1000 < trialData[tt]['stimulusTimes'][stimulusIndex+1]:
-                    stimulusValues_resampled.append(trialData[tt]['stimulusDirections'][stimulusIndex])
-                elif timepoint/1000 >= trialData[tt]['stimulusTimes'][stimulusIndex + 1]:
-                    stimulusValues_resampled.append(trialData[tt]['stimulusDirections'][stimulusIndex+1])
-
-                    stimulusIndex = stimulusIndex + 1
-        #stimuli.append(stimulusValues_resampled)
-        stimuli.append((np.array(stimulusValues_resampled) + 1) / 2)
-
         surroundValues_resampled = []
-        for timepoint in trialTimebase:
-            if surroundIndex >= len(trialData[tt]['stimulusTimes']) - 1:
-                surroundValues_resampled.append(trialData[tt]['surroundDirections'][-1])
-            else:
-                if timepoint/1000 >= trialData[tt]['stimulusTimes'][surroundIndex] and timepoint/1000 < trialData[tt]['stimulusTimes'][surroundIndex+1]:
-                    surroundValues_resampled.append(trialData[tt]['surroundDirections'][surroundIndex])
-                elif timepoint/1000 >= trialData[tt]['stimulusTimes'][surroundIndex + 1]:
-                    surroundValues_resampled.append(trialData[tt]['surroundDirections'][surroundIndex+1])
-
-                    surroundIndex = surroundIndex + 1
-        #stimuli.append(stimulusValues_resampled)
-        surrounds.append((np.array(surroundValues_resampled) + 1) / 2)
+        responseValues_resampled = []
 
         nanValues = []
-        responseValues_resampled = []
+
+
         for timepoint in trialTimebase:
-            if responseIndex >= len(trialData[tt]['responseTimes']) - 1:
-                responseValues_resampled.append(responseValues[-1])
+            indexInQuestion = np.argmin(np.abs(trialData[tt]['stimulusTimes'] - timepoint*samplingRate))
+            if timepoint*samplingRate < trialData[tt]['stimulusTimes'][indexInQuestion]:
+                stimulusValues_resampled.append(trialData[tt]['stimulusDirections'][indexInQuestion-1])
             else:
-                if timepoint/1000 >= trialData[tt]['responseTimes'][responseIndex] and timepoint/1000 < trialData[tt]['responseTimes'][responseIndex+1]:
-                    responseValues_resampled.append(responseValues[responseIndex])
-                elif timepoint/1000 >= trialData[tt]['responseTimes'][responseIndex + 1]:
-                    responseValues_resampled.append(responseValues[responseIndex+1])
-                    responseIndex = responseIndex + 1
+                stimulusValues_resampled.append(trialData[tt]['stimulusDirections'][indexInQuestion])
+
+            indexInQuestion = np.argmin(np.abs(trialData[tt]['stimulusTimes'] - timepoint*samplingRate))
+            if timepoint*samplingRate < trialData[tt]['stimulusTimes'][indexInQuestion]:
+                surroundValues_resampled.append(trialData[tt]['surroundDirections'][indexInQuestion-1])
+            else:
+                surroundValues_resampled.append(trialData[tt]['surroundDirections'][indexInQuestion])
+
+            if timepoint*samplingRate < trialData[tt]['responseTimes'][0]:
+                responseValues_resampled.append(np.nan)
+                nanValues.append(timepoint)
+            else:
+                indexInQuestion = np.argmin(np.abs(trialData[tt]['responseTimes'] - timepoint * samplingRate))
+                if timepoint * samplingRate < trialData[tt]['responseTimes'][indexInQuestion]:
+                    responseValues_resampled.append(responseValues[indexInQuestion - 1])
                 else:
-                    responseValues_resampled.append(np.nan)
-                    nanValues.append(timepoint)
+                    responseValues_resampled.append(responseValues[indexInQuestion])
 
-
-        #responses.append(responseValues_resampled)
+        stimuli.append((np.array(stimulusValues_resampled) + 1) / 2)
+        surrounds.append((np.array(surroundValues_resampled) + 1) / 2)
         responses.append((np.array(responseValues_resampled)+1)/2)
 
 
@@ -135,13 +118,18 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
             plt.title('Stimuli')
             g.show()
         else:
-            plt.plot(timebases[0], responses[0], label='Responses')
-            plt.plot(timebases[0], stimuli[0], label='Stimuli')
+            plt.plot(timebases[0][range(round(1/samplingRate))], responses[0][range(round(1/samplingRate))], label='Responses')
+            plt.plot(timebases[0][range(round(1/samplingRate))], stimuli[0][range(round(1/samplingRate))], label='Stimuli')
             plt.legend()
+            if not os.path.exists(savePath):
+                os.makedirs(savePath)
+            plt.savefig(savePath + 'SF' + str(spatialFrequency) + '_C' + str(
+                contrast) + '_timeseries.png')
+            plt.close()
     # For each trial, resample to a common stimulus and response timebase
 
     ## Cross correlation
-    # Cocatenate center stimuli and response vectors
+    # Concatenate center stimuli and response vectors
 
     for ss in range(2):
         responseVector = []
@@ -155,9 +143,10 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
                 stimulusVector.extend(surrounds[tt])
                 stimulusType = 'surround'
 
-        correlationSamplingRate = 1/1000
-        slidingDistance = 2 # slide 3 seconds forward, and 3 seconds backward
-        correlationIndices = list(range(round(-slidingDistance*1/samplingRate), round(slidingDistance*1/samplingRate)))
+        correlationSamplingRate = samplingRate
+        firstTimepoint = -1
+        lastTimepoint = 2 # slide 3 seconds forward, and 3 seconds backward
+        correlationIndices = list(range(round(firstTimepoint*1/samplingRate), round(lastTimepoint*1/samplingRate)))
 
         correlations = []
         for ii in correlationIndices:
@@ -170,7 +159,7 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
             elif ii>0:
                 stimulusIndicesToDelete = (np.array(range(ii))+1)*-1
                 responseIndicesToDelete = np.array(range(ii))
-            elif ii>0:
+            elif ii==0:
                 stimulusIndicesToDelete = []
                 responseIndicesToDelete = []
 
@@ -211,7 +200,6 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
         plt.title('Peak: ' + str(peak_rounded) + ', Lag: ' + str(lag_rounded) + ', Width: ' + str(width_fwhm_rounded))
         # Note that positive time means shifting the stimulus forward in time relative to a stationary response time series
 
-        savePath = savePathRoot + '/' + experimentName + '/' + subjectID + '/'
         if not os.path.exists(savePath):
             os.makedirs(savePath)
         plt.savefig(savePath + 'SF' + str(spatialFrequency) + '_C' + str(contrast) + '_crossCorrelation_' + stimulusType + '.png')

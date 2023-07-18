@@ -10,9 +10,9 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
 
 
     ## Establish analysis parameters
-    debugPlotting = False
+    debugPlotting = True
     savePathRoot = '/Users/harrisonmcadams/Desktop/migraineContinuous/analysis/'
-
+    savePath = savePathRoot + '/' + experimentName + '/' + subjectID + '/'
 
     samplingRate = 1/100
 
@@ -61,17 +61,16 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
         surroundIndex = 0
 
         stimulusValues_resampled = []
-        for timepoint in trialTimebase:
-            if stimulusIndex >= len(trialData[tt]['stimulusTimes']) - 1:
-                stimulusValues_resampled.append(trialData[tt]['stimulusDirections'][-1])
-            else:
-                if timepoint*samplingRate >= trialData[tt]['stimulusTimes'][stimulusIndex] and timepoint*samplingRate < trialData[tt]['stimulusTimes'][stimulusIndex+1]:
-                    stimulusValues_resampled.append(trialData[tt]['stimulusDirections'][stimulusIndex])
-                elif timepoint*samplingRate >= trialData[tt]['stimulusTimes'][stimulusIndex + 1]:
-                    stimulusValues_resampled.append(trialData[tt]['stimulusDirections'][stimulusIndex+1])
 
-                    stimulusIndex = stimulusIndex + 1
-        #stimuli.append(stimulusValues_resampled)
+
+
+        for timepoint in trialTimebase:
+            indexInQuestion = np.argmin(np.abs(trialData[tt]['stimulusTimes'] - timepoint*samplingRate))
+            if timepoint*samplingRate < trialData[tt]['stimulusTimes'][indexInQuestion]:
+                stimulusValues_resampled.append(trialData[tt]['stimulusDirections'][indexInQuestion-1])
+            else:
+                stimulusValues_resampled.append(trialData[tt]['stimulusDirections'][indexInQuestion])
+
         stimuli.append((np.array(stimulusValues_resampled) + 1) / 2)
 
         surroundValues_resampled = []
@@ -135,9 +134,14 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
             plt.title('Stimuli')
             g.show()
         else:
-            plt.plot(timebases[0], responses[0], label='Responses')
-            plt.plot(timebases[0], stimuli[0], label='Stimuli')
+            plt.plot(timebases[0][range(round(1/samplingRate))], responses[0][range(round(1/samplingRate))], label='Responses')
+            plt.plot(timebases[0][range(round(1/samplingRate))], stimuli[0][range(round(1/samplingRate))], label='Stimuli')
             plt.legend()
+            if not os.path.exists(savePath):
+                os.makedirs(savePath)
+            plt.savefig(savePath + 'SF' + str(spatialFrequency) + '_C' + str(
+                contrast) + '_timeseries.png')
+            plt.close()
     # For each trial, resample to a common stimulus and response timebase
 
     ## Cross correlation
@@ -212,7 +216,6 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
         plt.title('Peak: ' + str(peak_rounded) + ', Lag: ' + str(lag_rounded) + ', Width: ' + str(width_fwhm_rounded))
         # Note that positive time means shifting the stimulus forward in time relative to a stationary response time series
 
-        savePath = savePathRoot + '/' + experimentName + '/' + subjectID + '/'
         if not os.path.exists(savePath):
             os.makedirs(savePath)
         plt.savefig(savePath + 'SF' + str(spatialFrequency) + '_C' + str(contrast) + '_crossCorrelation_' + stimulusType + '.png')

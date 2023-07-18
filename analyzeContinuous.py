@@ -11,13 +11,13 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
 
     ## Establish analysis parameters
     debugPlotting = True
-    savePathRoot = '/Users/harrisonmcadams/Desktop/migraineContinuous/analysis/'
+    savePathRoot = os.path.expanduser('~') + '/Desktop/migraineContinuous/analysis/'
     savePath = savePathRoot + '/' + experimentName + '/' + subjectID + '/'
 
     samplingRate = 1/100
 
     ## Load the relevant trials
-    dataPath = '/Users/harrisonmcadams/Desktop/migraineContinuous/data/'
+    dataPath = os.path.expanduser('~') + '/Desktop/migraineContinuous/data/'
 
     # Find the trials
     relevantTrialFiles = glob.glob(dataPath + '/' + experimentName + '/' + subjectID + '/**/*SF' + str(spatialFrequency) + '_C' + str(contrast) + '_raw.pkl', recursive=True)

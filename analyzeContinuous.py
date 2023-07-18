@@ -141,7 +141,7 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
     # For each trial, resample to a common stimulus and response timebase
 
     ## Cross correlation
-    # Cocatenate center stimuli and response vectors
+    # Concatenate center stimuli and response vectors
 
     for ss in range(2):
         responseVector = []
@@ -156,8 +156,9 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
                 stimulusType = 'surround'
 
         correlationSamplingRate = samplingRate
-        slidingDistance = 2 # slide 3 seconds forward, and 3 seconds backward
-        correlationIndices = list(range(round(-slidingDistance*1/samplingRate), round(slidingDistance*1/samplingRate)))
+        firstTimepoint = -1
+        lastTimepoint = 2 # slide 3 seconds forward, and 3 seconds backward
+        correlationIndices = list(range(round(firstTimepoint*1/samplingRate), round(lastTimepoint*1/samplingRate)))
 
         correlations = []
         for ii in correlationIndices:

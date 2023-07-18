@@ -41,6 +41,7 @@ def getExperimentParams(experimentName):
         trialParams.update({
             'centerGaborSize': 2, # degrees
             'surroundGaborSize': 2, # degrees
+            'maskShape': 'horizontalGaussian',
             'gaborContrasts': [1, 2, 4, 8, 16], # % Michelson contrast
             'gaborSpatialFrequencies': [1,8], # cycles/degree
             'trialRepeats': 3,
@@ -52,10 +53,24 @@ def getExperimentParams(experimentName):
         trialParams.update({
             'centerGaborSize': 2, # degrees
             'surroundGaborSize': 2, # degrees
+            'maskShape': 'horizontalGaussian',
             'gaborContrasts': [16], # % Michelson contrast
             'gaborSpatialFrequencies': [1], # cycles/degree
             'trialRepeats': 3,
             'gaussianFWHM': 0.35, # degrees
+            'speed': 3.75  # Hz
+        })
+
+    if trialParams['experimentLabel'] == 'battista':
+        trialParams.update({
+            'centerGaborSize': 2,  # degrees
+            'surroundGaborSize': 0,  # degrees
+            'centerAnnulusSize': 4,
+            'maskShape': 'circle',
+            'gaborContrasts': [16],  # % Michelson contrast
+            'gaborSpatialFrequencies': [1],  # cycles/degree
+            'trialRepeats': 3,
+            'gaussianFWHM': 0.35,  # degrees
             'speed': 3.75  # Hz
         })
 

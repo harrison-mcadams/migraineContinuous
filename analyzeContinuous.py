@@ -194,10 +194,14 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
         width_fwhm_rounded = round(width_fwhm, 3)
         lag_rounded = round(lag, 3)
 
-        from sklearn.metrics import r2_score
         y_pred = func(correlationTimebase, *popt)
-        r2 = r2_score(correlations, y_pred)
+
+
+        SSres = sum((np.array(correlations)-np.array(y_pred))**2)
+        SStot = sum((np.array(correlations)-np.mean(correlations))**2)
+        r2 = 1-SSres/SStot
         r2_rounded = round(r2, 3)
+
 
         plt.plot(correlationTimebase, correlations, label='CCG')
         plt.plot(correlationTimebase, func(correlationTimebase, *popt), label='Fit')

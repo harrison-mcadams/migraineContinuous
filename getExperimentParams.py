@@ -71,7 +71,8 @@ def getExperimentParams(experimentName):
             'gaborSpatialFrequencies': [1],  # cycles/degree
             'trialRepeats': 3,
             'gaussianFWHM': 0.35,  # degrees
-            'speed': 3.75  # Hz
+            'speed': 3.75,  # Hz
+            'transitionSizeFactor': 1.1
         })
 
     return trialParams

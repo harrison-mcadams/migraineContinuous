@@ -2,14 +2,13 @@ import getExperimentParams, runContinuousTrial, random
 
 ## Basic setup params
 experimentName = 'experiment_2_simplified'
-subjectID = '500ms_flanker4'
+subjectID = '500ms_repeats'
 segmentLength = 500/1000 # in seconds
-viewingDistance = 55 # in cm
-contrasts = [1, 2, 8, 90]
-trialRepeats = 3
+viewingDistance = 50 # in cm
+contrasts = [2]
+trialRepeats = 5
 flankerSize = 4
-debugSingleTrial = False # If false, will run through different contrasts, spatial frequencies, and repetitions
-useMetropsis = True
+useMetropsis = False
 useFullScreen = True
 
 ## Assemble the params
@@ -28,12 +27,6 @@ if useMetropsis:
     trialParams.update({'screenNumber': 1})
 else:
     trialParams.update({'screenNumber': 0})
-
-
-if debugSingleTrial:
-    trialParams['gaborContrasts'] = [8]
-    trialParams['gaborSpatialFrequencies'] = [1]
-    trialParams['trialRepeats'] = 1
 
 
 randomizeTrialOrder = True

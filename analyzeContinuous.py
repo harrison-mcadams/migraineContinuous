@@ -1,4 +1,4 @@
-def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency, trials):
+def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency, trials, saveSuffix):
 
     import glob
     import pickle
@@ -14,7 +14,7 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency, tri
     savePathRoot = os.path.expanduser('~') + '/Desktop/migraineContinuous/analysis/'
     savePath = savePathRoot + '/' + experimentName + '/' + subjectID + '/'
 
-    samplingRate = 1/1000
+    samplingRate = 1/100
 
     ## Load the relevant trials
     dataPath = os.path.expanduser('~') + '/Desktop/migraineContinuous/data/'
@@ -239,7 +239,7 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency, tri
 
         if not os.path.exists(savePath):
             os.makedirs(savePath)
-        plt.savefig(savePath + 'SF' + str(spatialFrequency) + '_C' + str(contrast) + '_crossCorrelation_' + stimulusType + '.png')
+        plt.savefig(savePath + 'SF' + str(spatialFrequency) + '_C' + str(contrast) + '_crossCorrelation_' + stimulusType + saveSuffix + '.png')
         plt.close()
         
         if ss == 0:

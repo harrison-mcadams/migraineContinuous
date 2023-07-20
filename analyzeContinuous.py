@@ -1,4 +1,4 @@
-def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
+def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency, trials):
 
     import glob
     import pickle
@@ -14,7 +14,7 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
     savePathRoot = os.path.expanduser('~') + '/Desktop/migraineContinuous/analysis/'
     savePath = savePathRoot + '/' + experimentName + '/' + subjectID + '/'
 
-    samplingRate = 1/100
+    samplingRate = 1/1000
 
     ## Load the relevant trials
     dataPath = os.path.expanduser('~') + '/Desktop/migraineContinuous/data/'
@@ -22,11 +22,16 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
     # Find the trials
     relevantTrialFiles = glob.glob(dataPath + '/' + experimentName + '/' + subjectID + '/**/*SF' + str(spatialFrequency) + '_C' + str(contrast) + '_raw.pkl', recursive=True)
 
-    nTrials = len(relevantTrialFiles)
+    if trials == 'all':
+        nTrials = len(relevantTrialFiles)
+        trialListForLoops = range(nTrials)
+    else:
+        trialListForLoops = np.array(trials) - 1
+        nTrials = len(trials)
 
     # Load them into memory
     trialData = []
-    for tt in range(nTrials):
+    for tt in trialListForLoops:
         with open(relevantTrialFiles[tt], 'rb') as f:
             trialData.append(pickle.load(f))
 
@@ -143,35 +148,58 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
                 stimulusVector.extend(surrounds[tt])
                 stimulusType = 'surround'
 
-        correlationSamplingRate = samplingRate
+        useNumpy = True
+
         firstTimepoint = -1
-        lastTimepoint = 2 # slide 3 seconds forward, and 3 seconds backward
-        correlationIndices = list(range(round(firstTimepoint*1/samplingRate), round(lastTimepoint*1/samplingRate)))
-
-        correlations = []
-        for ii in correlationIndices:
-
-
-            #stimulusIndicesToDelete = (np.array(range(ii))+1)*-1
-            if ii < 0:
-                stimulusIndicesToDelete = np.array(range(abs(ii)))
-                responseIndicesToDelete = (np.array(range(abs(ii)))+1)*-1
-            elif ii>0:
-                stimulusIndicesToDelete = (np.array(range(ii))+1)*-1
-                responseIndicesToDelete = np.array(range(ii))
-            elif ii==0:
-                stimulusIndicesToDelete = []
-                responseIndicesToDelete = []
-
-
-            shiftedStimulus = np.delete(stimulusVector, stimulusIndicesToDelete)
-
-            trimmedResponse = np.delete(responseVector, responseIndicesToDelete)
-
-            corr = np.corrcoef(trimmedResponse, shiftedStimulus)
-            correlations.append(corr[0,1])
-
+        lastTimepoint = 2
+        correlationIndices = list(range(round(firstTimepoint * 1 / samplingRate), round(lastTimepoint * 1 / samplingRate)))
         correlationTimebase = np.array(correlationIndices)*samplingRate
+
+
+        if useNumpy:
+            #crossCorrelation = (np.correlate(responseVector, stimulusVector, 'full'))
+
+            #plt.plot(crossCorrelation[int(middleIndex + firstTimepoint / samplingRate):int(middleIndex + lastTimepoint / samplingRate)])
+
+            a = responseVector
+            b = stimulusVector
+            a = (a - np.mean(a)) / (np.std(a) * len(a))
+            b = (b - np.mean(b)) / (np.std(b))
+            correlations = np.correlate(a, b, 'full')
+
+            middleIndex = int(np.floor(len(correlations) / 2))
+
+            correlations = correlations[int(middleIndex + firstTimepoint / samplingRate):int(middleIndex + lastTimepoint / samplingRate)]
+            correlations = list(correlations)
+        else:
+
+            correlationSamplingRate = samplingRate
+
+
+
+            correlations = []
+            for ii in correlationIndices:
+
+
+                #stimulusIndicesToDelete = (np.array(range(ii))+1)*-1
+                if ii < 0:
+                    stimulusIndicesToDelete = np.array(range(abs(ii)))
+                    responseIndicesToDelete = (np.array(range(abs(ii)))+1)*-1
+                elif ii>0:
+                    stimulusIndicesToDelete = (np.array(range(ii))+1)*-1
+                    responseIndicesToDelete = np.array(range(ii))
+                elif ii==0:
+                    stimulusIndicesToDelete = []
+                    responseIndicesToDelete = []
+
+
+                shiftedStimulus = np.delete(stimulusVector, stimulusIndicesToDelete)
+
+                trimmedResponse = np.delete(responseVector, responseIndicesToDelete)
+
+                corr = np.corrcoef(trimmedResponse, shiftedStimulus)
+                correlations.append(corr[0,1])
+
 
         time0 = np.argmin(np.abs(np.array(correlationTimebase) - 0))
         maxCorrelation = max(correlations[time0:-1], key=abs)

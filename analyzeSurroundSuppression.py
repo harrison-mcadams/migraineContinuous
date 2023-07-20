@@ -1,26 +1,30 @@
 import analyzeContinuous
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 subjectID = '500ms_varyContrast'
 experimentName = 'battista'
 contrasts = [2, 50, 90]
 spatialFrequency = 1
+nTrials = 5
 
 centerPeaks = []
 surroundPeaks = []
 for cc in contrasts:
-    centerPeak, centerLag, centerWidth, surroundPeak, surroundLag, surroundWidth = analyzeContinuous.analyzeContinuous(subjectID, experimentName, cc, spatialFrequency)
+    for tt in range(nTrials):
+        analyzeContinuous.analyzeContinuous(subjectID, experimentName, cc, spatialFrequency, [tt+1], '_trial'+str(tt+1))
+
+
+    centerPeak, centerLag, centerWidth, surroundPeak, surroundLag, surroundWidth = analyzeContinuous.analyzeContinuous(subjectID, experimentName, cc, spatialFrequency, 'all', '')
     centerPeaks.append(centerPeak)
     surroundPeaks.append(surroundPeak)
-    
-#contrast = 16
-#analyzeContinuous.analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency)
+
 
 plt.plot(np.log(contrasts), centerPeaks, label='Center')
 plt.plot(np.log(contrasts), surroundPeaks, label='Surround')
 plt.legend()
 plt.xlabel('Contrast (%)')
 plt.ylabel('Kernel Peak (r)')
+plt.savefig(os.path.expanduser('~') + '/Desktop/migraineContinuous/analysis/' + experimentName + '/' + subjectID + '/CRF.png')
 plt.xticks(np.log(contrasts), contrasts)
-plt.savefig('/Users/carlynpattersongentile/Desktop/migraineContinuous/analysis/' + experimentName + '/' + subjectID + '/CRF.png')

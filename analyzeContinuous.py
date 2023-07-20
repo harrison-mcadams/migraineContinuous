@@ -1,4 +1,4 @@
-def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
+def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency, trials):
 
     import glob
     import pickle
@@ -14,7 +14,7 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
     savePathRoot = os.path.expanduser('~') + '/Desktop/migraineContinuous/analysis/'
     savePath = savePathRoot + '/' + experimentName + '/' + subjectID + '/'
 
-    samplingRate = 1/100
+    samplingRate = 1/1000
 
     ## Load the relevant trials
     dataPath = os.path.expanduser('~') + '/Desktop/migraineContinuous/data/'
@@ -22,11 +22,16 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency):
     # Find the trials
     relevantTrialFiles = glob.glob(dataPath + '/' + experimentName + '/' + subjectID + '/**/*SF' + str(spatialFrequency) + '_C' + str(contrast) + '_raw.pkl', recursive=True)
 
-    nTrials = len(relevantTrialFiles)
+    if trials == 'all':
+        nTrials = len(relevantTrialFiles)
+        trialListForLoops = range(nTrials)
+    else:
+        trialListForLoops = np.array(trials) - 1
+        nTrials = len(trials)
 
     # Load them into memory
     trialData = []
-    for tt in range(nTrials):
+    for tt in trialListForLoops:
         with open(relevantTrialFiles[tt], 'rb') as f:
             trialData.append(pickle.load(f))
 

@@ -2,9 +2,9 @@ import analyzeContinuous
 import matplotlib.pyplot as plt
 import numpy as np
 
-subjectID = 'harry_100ms'
-experimentName = 'experiment_2_simplified'
-contrasts = [1, 2, 4, 8, 16]
+subjectID = '500ms_varyContrast'
+experimentName = 'battista'
+contrasts = [2, 50, 90]
 spatialFrequency = 1
 
 centerPeaks = []

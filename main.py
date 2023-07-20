@@ -20,6 +20,7 @@ trialParams.update({'gaborContrasts': contrasts})
 trialParams.update({'fullScreen': useFullScreen})
 trialParams.update({'trialRepeats': trialRepeats})
 trialParams.update({'surroundGaborSize': flankerSize})
+trialParams.update({'centerAnnulusSize': annulusSize})
 
 
 

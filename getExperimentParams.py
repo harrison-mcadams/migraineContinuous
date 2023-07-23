@@ -1,6 +1,7 @@
 def getExperimentParams(experimentName):
     
     import os, datetime
+    import numpy as np
 
     basePath = os.path.expanduser('~') + '/Desktop/'
     projectName = 'migraineContinuous/'
@@ -90,13 +91,15 @@ def getExperimentParams(experimentName):
             'transitionSizeFactor': 1.1
         })
 
-    if experimentName == 'tardin2019Continuous':
-        trialParams.update({'targetRadius_degrees': 5})
+    if experimentName == 'tadin2019Continuous':
+        trialParams.update({'targetRadii_degrees': np.array([0.43, 0.75, 1.33, 2.33, 4, 7])*0.5})
         trialParams.update({'dotSize_degrees': 3 / 60})
-        trialParams.update({'contrast': 100})
+        trialParams.update({'contrasts': [7, 99]})
         trialParams.update({'randomizeTarget': False})
         trialParams.update({'background': 'gray'})
         trialParams.update({'units': 'pix'})
         trialParams.update({'trialLength_s': 20})
+        trialParams.update({'trialRepeats': 3})
+
 
     return trialParams

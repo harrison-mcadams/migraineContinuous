@@ -77,8 +77,10 @@ def runMotionDiscrimination(trialParams):
     dotSize_cm = convertDegreesToCM(dotSize_degrees, viewingDistance_cm)
     circleRadius_cm = convertDegreesToCM(circleRadius_degrees, viewingDistance_cm)
 
-    dotSize_pixels = dotSize_cm * pixelsPerCM
-    circleRadius_pixels = circleRadius_cm * pixelsPerCM
+    dotSize_pixels = round(dotSize_cm * pixelsPerCM)
+    circleRadius_pixels = round(circleRadius_cm * pixelsPerCM)
+
+    circleRadius_pixels = np.ceil(circleRadius_pixels/dotSize_pixels)*dotSize_pixels
 
 
     ## Make our stimulus and background
@@ -140,7 +142,7 @@ def runMotionDiscrimination(trialParams):
             if 'q' in key or 'escape' in key:
                 core.quit()
 
-    ## Package up the data
+    ## Package up the data to save out
     # Set the timebase relative to trial start
     frameTimes = np.array(frameTimes) - frameTimes[0]
 
@@ -179,12 +181,12 @@ def runMotionDiscrimination(trialParams):
         os.makedirs(savePath)
 
     # Save variable
-    with open(savePath + startTime + '_S' + str(trialParams['targetSize']) + '_C' + str(trialParams['contrast']) + '_raw.pkl', 'wb') as f:
+    with open(savePath + startTime + '_S' + str(trialParams['targetRadius_degrees']) + '_C' + str(trialParams['contrast']) + '_raw.pkl', 'wb') as f:
         pickle.dump(data, f)
     f.close()
 
     # Write out text file of the results
-    with open(savePath + startTime + '_S' + str(trialParams['targetSize']) + '_C' + str(
+    with open(savePath + startTime + '_S' + str(trialParams['targetRadius_degrees']) + '_C' + str(
             trialParams['contrast']) + '.txt', 'w') as g:
         g.write('time (s),targetX,targetY,mouseX,mouseY\n')
         for ii in range(len(frameTimes)):

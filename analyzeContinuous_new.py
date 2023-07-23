@@ -23,7 +23,7 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
     # Find the trials
 
     if experimentName == 'tadin2019Continuous':
-        relevantTrialFiles = glob.glob(dataPath + '/' + experimentName + '/' + subjectID + '/**/*S' + str(trialParams['targetSize']) + '_C' + str(trialParams['contrast']) + '_raw.pkl', recursive=True)
+        relevantTrialFiles = glob.glob(dataPath + '/' + experimentName + '/' + subjectID + '/**/*S' + str(trialParams['targetRadius_degrees']) + '_C' + str(trialParams['contrast']) + '_raw.pkl', recursive=True)
         eventNames = ['mouseYVelocities', 'targetXVelocities', 'targetYVelocities', 'mouseXs', 'mouseYs', 'targetXs', 'targetYs', 'mouseXVelocities']
         eventTimeNames = ['frameTimes', 'frameTimes', 'frameTimes', 'frameTimes', 'frameTimes', 'frameTimes', 'frameTimes', 'frameTimes']
     else:
@@ -177,11 +177,14 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
 
             # Average across trials
 
-            summedResponse = np.zeros(len(correlationsPooled[stimulusNames[cc] + '-' + responseNames[cc]][tt]))
-            for tt in range(nTrials):
-                summedResponse = correlationsPooled[stimulusNames[cc] + '-' + responseNames[cc]][tt] + summedResponse
 
-            meanResponse = np.array(summedResponse)/nTrials
+            #summedResponse = np.zeros(len(correlationsPooled[stimulusNames[cc] + '-' + responseNames[cc]][tt]))
+            combinedResponse = []
+            for tt in range(nTrials):
+                #summedResponse = correlationsPooled[stimulusNames[cc] + '-' + responseNames[cc]][tt] + summedResponse
+                combinedResponse.append(np.array(correlationsPooled[stimulusNames[cc] + '-' + responseNames[cc]][tt]))
+            #meanResponse = np.array(summedResponse)/nTrials
+            meanResponse = np.nanmean(np.array(combinedResponse), 0)
             meanCorrelations.update({stimulusNames[cc] + '-' + responseNames[cc]: meanResponse})
 
     print('uggieboogie')

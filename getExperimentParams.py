@@ -1,17 +1,23 @@
 def getExperimentParams(experimentName):
     
-    import os
+    import os, datetime
 
+    basePath = os.path.expanduser('~') + '/Desktop/'
+    projectName = 'migraineContinuous/'
+    dataPath = basePath + projectName + 'data/'
+    today = datetime.date.today()
+    todayString = today.strftime('%Y-%m-%d')
 
     trialParams = {
-        'subjectID': 'test',
         'viewingDistance': 50, # cm
         'experimentLabel': experimentName,
         'segmentLength': 16/1000, # s
         'trialLength': 60, # s
         'preTrialSegmentLength': 2, # s
-        'savePath': os.path.expanduser('~') + '/Desktop/',
-        'saveFolder': 'migraineContinuous',
+        'basePath': basePath,
+        'dataPath': dataPath,
+        'projectName': projectName,
+        'todayString': todayString,
         'fullScreen': True
     }
 
@@ -83,5 +89,14 @@ def getExperimentParams(experimentName):
             'speed': 3.75,  # Hz
             'transitionSizeFactor': 1.1
         })
+
+    if experimentName == 'tardin2019Continuous':
+        trialParams.update({'targetRadius_degrees': 5})
+        trialParams.update({'dotSize_degrees': 3 / 60})
+        trialParams.update({'contrast': 100})
+        trialParams.update({'randomizeTarget': False})
+        trialParams.update({'background': 'gray'})
+        trialParams.update({'units': 'pix'})
+        trialParams.update({'trialLength_s': 20})
 
     return trialParams

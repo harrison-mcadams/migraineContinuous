@@ -92,8 +92,13 @@ def runMotionDiscrimination(trialParams):
         target = visual.NoiseStim(mywin, noiseType='binary', size=circleRadius_pixels, noiseElementSize=dotSize_pixels, units=units, mask='circle', contrast=contrast/100)
 
     ## Display the trial setup
+    # Make the pre-trial text
+    textString = 'Press Space to begin Trial '+str(trialParams['trialNumber'])+' of '+str(trialParams['totalTrials'])
+    preTrialText = visual.TextStim(win=mywin, pos=[0, 4], text=textString)
+
     background.draw()
     target.draw()
+    preTrialText.draw()
     mywin.flip()
 
     ## Await space bar to start

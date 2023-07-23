@@ -16,18 +16,23 @@ def runMotionDiscrimination(trialParams):
 
     mywin = visual.Window([1440, 900], fullscr=fullScreen, monitor='testMonitor', screen=screen,
                           units=units)
+
+    #Grab some info about that window
     mywin.recordFrameIntervals = True
     frameRate = mywin.getActualFrameRate()
     trialParams.update({'frameRate': frameRate})
 
+    ## Set up the trial parameters
     viewingDistance_cm = trialParams['viewingDistance_cm']
 
+    # Save stuff
     dataPath = trialParams['dataPath']
     today_string = trialParams['todayString']
     startTime = datetime.datetime.now()
     startTime = startTime.strftime("%H%M%S")
     trialParams.update({'startTime': startTime})
 
+    # Visual params
     contrast = trialParams['contrast']
     nFrames = int(np.ceil(frameRate*20))
     trialParams.update({'nFrames': nFrames})
@@ -38,8 +43,6 @@ def runMotionDiscrimination(trialParams):
 
 
     ## Prepare the random walk
-    nFrames = 60*20
-    frameRate = 60
     arcminsPerPixel = 2.6/2
     mean = 0
     std = 4 # gives speed of 6.6 degrees per second approximately, to match what Tadin did. Note that the original continuous paper from Johannes had this at 1
@@ -50,6 +53,8 @@ def runMotionDiscrimination(trialParams):
     speed_arcminPerSecond = speed_pixelsPerSecond * arcminsPerPixel
     speed_degreePerSecond = speed_arcminPerSecond /60
     print(np.mean(speed_degreePerSecond))
+
+    # We will use these xPosition vectors to actually jitter the target, as well as to save out the stimulus information
     xPosition = np.cumsum(xVelocity)
     yPosition = np.cumsum(yVelocity)
 
@@ -59,16 +64,10 @@ def runMotionDiscrimination(trialParams):
 
 
 
+    ## Convert distances from degrees to pixels, through centimeters
 
     pixelCorrectionFactor = mywin.clientSize[0]/mywin.size[0]
     pixelsPerCM = 2560/30 * pixelCorrectionFactor
-
-
-    #stimulus = visual.DotStim(mywin, fieldSize=10, speed=0, dotLife=-1, nDots=1000, coherence=0)
-    # Show 100 frames
-
-
-
 
     def convertDegreesToCM(degrees, viewingDistance_cm):
         cms = 2 * viewingDistance_cm * np.tan(np.deg2rad(degrees / 2))
@@ -81,6 +80,8 @@ def runMotionDiscrimination(trialParams):
     dotSize_pixels = dotSize_cm * pixelsPerCM
     circleRadius_pixels = circleRadius_cm * pixelsPerCM
 
+
+    ## Make our stimulus and background
     if background == 'gray':
         target = visual.NoiseStim(mywin, noiseType='binary', mask='raisedCos', opacity=1, maskParams={'fringeWidth': 0.9}, size=[[circleRadius_pixels*2,circleRadius_pixels*2]], noiseElementSize=dotSize_pixels, units=units, contrast=contrast/100)
         background = visual.NoiseStim(mywin, noiseType='binary', mask='raisedCos', opacity=0, maskParams={'fringeWidth': 0.9}, size=[100,100], noiseElementSize=dotSize_pixels, units=units, contrast=contrast/100)
@@ -88,7 +89,7 @@ def runMotionDiscrimination(trialParams):
         background = visual.NoiseStim(mywin, noiseType='binary', opacity=1, size=[[2000,2000]], noiseElementSize=dotSize_pixels, units=units, contrast=contrast/100)
         target = visual.NoiseStim(mywin, noiseType='binary', size=circleRadius_pixels, noiseElementSize=dotSize_pixels, units=units, mask='circle', contrast=contrast/100)
 
-
+    ## Display the trial setup
     background.draw()
     target.draw()
     mywin.flip()
@@ -104,23 +105,34 @@ def runMotionDiscrimination(trialParams):
                 core.quit()  # abort experiment
         event.clearEvents()  # clear other (eg mouse) events - they clog the buffer
 
-    frameTimes = []
-
+    # Prepare for trial
     mouse = event.Mouse()
 
+    frameTimes = []
     keyPresses = []
     mousePositions = []
+
+    ## Perform trial
     for ii in range(nFrames):
+
+        # Draw background
         background.draw()
+
+        # Adjust the target
         target.pos = [xPosition[ii], yPosition[ii]]
         if randomizeTarget:
             target.buildNoise()
         target.draw()
+
+        # Update the frame
         mywin.flip()
+
+        # Save out timing and mouse position
         frameTimes.append(mywin.lastFrameT)
         mousePosition = mouse.getPos()
         mousePositions.append([mousePosition[0], mousePosition[1]])
 
+        # Listen for quit
         keys = event.getKeys(timeStamped=logging.defaultClock, keyList=['q', 'escape'])
         keyPresses.append(keys)
         event.clearEvents()
@@ -128,6 +140,11 @@ def runMotionDiscrimination(trialParams):
             if 'q' in key or 'escape' in key:
                 core.quit()
 
+    ## Package up the data
+    # Set the timebase relative to trial start
+    frameTimes = np.array(frameTimes) - frameTimes[0]
+
+    # Get velocities
     targetXVelocities = []
     targetYVelocities = []
     mouseXVelocities = []
@@ -140,6 +157,7 @@ def runMotionDiscrimination(trialParams):
         mouseYVelocities.append((np.array(mousePositions)[ii+1,1]- np.array(mousePositions)[ii,1])/(frameTimes[ii+1]-frameTimes[ii]))
 
 
+    # Package up the main output variable
     data = {
         'mouseXs': np.array(mousePositions)[:,0],
         'mouseXVelocities': mouseXVelocities,
@@ -153,21 +171,19 @@ def runMotionDiscrimination(trialParams):
         'trialParams': trialParams
     }
 
-
-
-
-
-
+    # Define path
     savePath=dataPath + trialParams['experimentLabel'] + '/' + trialParams['subjectID'] + '/' + today_string + '/'
 
+    # Make the output folder
     if not os.path.exists(savePath):
         os.makedirs(savePath)
 
+    # Save variable
     with open(savePath + startTime + '_S' + str(trialParams['targetSize']) + '_C' + str(trialParams['contrast']) + '_raw.pkl', 'wb') as f:
         pickle.dump(data, f)
     f.close()
 
-
+    # Write out text file of the results
     with open(savePath + startTime + '_S' + str(trialParams['targetSize']) + '_C' + str(
             trialParams['contrast']) + '.txt', 'w') as g:
         g.write('time (s),targetX,targetY,mouseX,mouseY\n')
@@ -175,4 +191,5 @@ def runMotionDiscrimination(trialParams):
             g.write(str(frameTimes[ii]) + ',' + str(targetPositions[ii][0]) +',' + str(targetPositions[ii][1]) + ',' + str(mousePositions[ii][0]) + ',' + str(mousePositions[ii][1]) + '\n')
     g.close()
 
+    # For support
     print('boom')

@@ -13,7 +13,7 @@ def getExperimentParams(experimentName):
 
     trialParams = {
         'viewingDistance': 50, # cm
-        'experimentLabel': experimentName,
+        'experimentName': experimentName,
         'segmentLength': 16/1000, # s
         'trialLength': 60, # s
         'preTrialSegmentLength': 2, # s
@@ -25,7 +25,7 @@ def getExperimentParams(experimentName):
         'fullScreen': True
     }
 
-    if trialParams['experimentLabel'] == 'experiment_1a':
+    if trialParams['experimentName'] == 'experiment_1a':
         trialParams.update({
             'centerGaborSize': 2, # degrees
             'surroundGaborSize': 0, # degrees
@@ -38,7 +38,7 @@ def getExperimentParams(experimentName):
             'transitionSizeFactor': 0
         })
 
-    if trialParams['experimentLabel'] == 'experiment_1b':
+    if trialParams['experimentName'] == 'experiment_1b':
         trialParams.update({
             'centerGaborSize': 2, # degrees
             'surroundGaborSize': 0, # degrees
@@ -51,7 +51,7 @@ def getExperimentParams(experimentName):
             'transitionSizeFactor': 0
         })
 
-    if trialParams['experimentLabel'] == 'experiment_2':
+    if trialParams['experimentName'] == 'experiment_2':
         trialParams.update({
             'centerGaborSize': 2, # degrees
             'surroundGaborSize': 2, # degrees
@@ -65,7 +65,7 @@ def getExperimentParams(experimentName):
             'transitionSizeFactor': 0
         })
 
-    if trialParams['experimentLabel'] == 'experiment_2_simplified':
+    if trialParams['experimentName'] == 'experiment_2_simplified':
         trialParams.update({
             'centerGaborSize': 2, # degrees
             'surroundGaborSize': 2, # degrees
@@ -80,7 +80,7 @@ def getExperimentParams(experimentName):
 
         })
 
-    if trialParams['experimentLabel'] == 'battista':
+    if trialParams['experimentName'] == 'battista':
         trialParams.update({
             'centerGaborSize': 2,  # degrees
             'surroundGaborSize': 0,  # degrees

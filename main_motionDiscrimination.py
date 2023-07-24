@@ -7,8 +7,8 @@ viewingDistance = 50
 randomizeTrialOrder = True
 
 #option = 1 # jittering background of dots with stationary, smoothed target
-option = 2 # gray background, with stationary, smoothed target
-
+#option = 2 # gray background, with stationary, smoothed target
+option = 3 # stationary background of uniform noise dots with stationary, smoothed target
 
 ## depending on monitor, will need to figure out screen width, pixel size, etc.
 
@@ -31,6 +31,17 @@ elif option == 2: # gray background, with stationary, smoothed target
     trialParams.update({'background': 'gray'})
     trialParams.update({'targetMask': 'raisedCos'})
     trialParams.update({'targetMaskParams': {'fringeWidth': 0.9}})
+    trialParams.update({'randomizeBackground': False})
+if option == 3:  # stationary background of uniform noise dots with stationary, smoothed target
+    trialParams.update({'contrasts': [50]})
+    trialParams.update({'targetRadii_degrees': [7]})
+    trialParams.update({'targetOpacity': 1})
+    trialParams.update({'backgroundContrast': 50})
+    trialParams.update({'background': 'pixels'})
+    trialParams.update({'targetNoiseType': 'uniform'})
+    trialParams.update({'backgroundNoiseType': 'uniform'})
+    trialParams.update({'targetMask': 'raisedCos'})
+    trialParams.update({'targetMaskParams': {'fringeWidth': 0.3}})
     trialParams.update({'randomizeBackground': False})
 
 

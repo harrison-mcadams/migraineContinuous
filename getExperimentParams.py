@@ -100,6 +100,11 @@ def getExperimentParams(experimentName):
         trialParams.update({'units': 'pix'})
         trialParams.update({'trialLength_s': 20})
         trialParams.update({'trialRepeats': 3})
-
+        trialParams.update({'targetOpacity': 1})
+        trialParams.update({'targetMask': 'raisedCos'})
+        trialParams.update({'targetMaskParams': {'fringeWidth': 0.9}})
+        trialParams.update({'randomizeBackground': False})
+        trialParams.update({'backgroundNoiseType': 'binary'})
+        trialParams.update({'targetNoiseType': 'binary'})
 
     return trialParams

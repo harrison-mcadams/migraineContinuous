@@ -46,6 +46,8 @@ def runMotionDiscrimination(trialParams):
     background = trialParams['background']
     randomizeTarget = trialParams['randomizeTarget']
     randomizeBackground = trialParams['randomizeBackground']
+    targetNoiseType = trialParams['targetNoiseType']
+    backgroundNoiseType = trialParams['backgroundNoiseType']
     targetMask = trialParams['targetMask']
     targetMaskParams = trialParams['targetMaskParams']
 
@@ -96,11 +98,11 @@ def runMotionDiscrimination(trialParams):
 
     ## Make our stimulus and background
     if background == 'gray':
-        target = visual.NoiseStim(mywin, noiseType='binary', mask=targetMask, maskParams=targetMaskParams, size=[[circleRadius_pixels*2,circleRadius_pixels*2]], noiseElementSize=dotSize_pixels, units=units, contrast=contrast/100, opacity=opacity)
-        background = visual.NoiseStim(mywin, noiseType='binary', mask='raisedCos', opacity=0, maskParams={'fringeWidth': 0.9}, size=[100,100], noiseElementSize=dotSize_pixels, units=units, contrast=backgroundContrast/100)
+        target = visual.NoiseStim(mywin, noiseType=targetNoiseType, mask=targetMask, maskParams=targetMaskParams, size=[[circleRadius_pixels*2,circleRadius_pixels*2]], noiseElementSize=dotSize_pixels, units=units, contrast=contrast/100, opacity=opacity)
+        background = visual.NoiseStim(mywin, noiseType=backgroundNoiseType, mask='raisedCos', opacity=0, maskParams={'fringeWidth': 0.9}, size=[100,100], noiseElementSize=dotSize_pixels, units=units, contrast=backgroundContrast/100)
     elif background == 'pixels':
-        target = visual.NoiseStim(mywin, noiseType='binary', size=circleRadius_pixels, noiseElementSize=dotSize_pixels, units=units, mask=targetMask, maskParams=targetMaskParams, contrast=contrast/100, opacity=opacity)
-        background = visual.NoiseStim(mywin, noiseType='binary', opacity=1, size=[1440, 900], noiseElementSize=dotSize_pixels, units=units, contrast=backgroundContrast/100)
+        target = visual.NoiseStim(mywin, noiseType=targetNoiseType, size=circleRadius_pixels, noiseElementSize=dotSize_pixels, units=units, mask=targetMask, maskParams=targetMaskParams, contrast=contrast/100, opacity=opacity)
+        background = visual.NoiseStim(mywin, noiseType=backgroundNoiseType, opacity=1, size=[1440, 900], noiseElementSize=dotSize_pixels, units=units, contrast=backgroundContrast/100)
 
     ## Display the trial setup
     # Make the pre-trial text

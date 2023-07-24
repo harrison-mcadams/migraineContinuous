@@ -135,6 +135,8 @@ def runMotionDiscrimination(trialParams):
     pointer.draw()
     mywin.flip()
 
+
+
     ## Await space bar to start
     thisResp = None
     while thisResp == None:
@@ -146,10 +148,12 @@ def runMotionDiscrimination(trialParams):
                 core.quit()  # abort experiment
         event.clearEvents()  # clear other (eg mouse) events - they clog the buffer
 
-    # Prepare for trial
+    clock.wait(3)
     #mouse = event.Mouse()
     mouse = visual.CustomMouse(mywin)
     mouse.pointer = pointer
+
+    # Prepare for trial
 
     frameTimes = []
     keyPresses = []

@@ -39,7 +39,8 @@ def runMotionDiscrimination(trialParams):
     else:
         backgroundContrast = contrast
     opacity = trialParams['targetOpacity']
-    nFrames = int(np.ceil(frameRate*20))
+    trialLength_s = trialParams['trialLength_s']
+    nFrames = int(np.ceil(frameRate*trialLength_s))
     trialParams.update({'nFrames': nFrames})
     dotSize_degrees = trialParams['dotSize_degrees']
     circleRadius_degrees = trialParams['targetRadius_degrees']
@@ -53,11 +54,13 @@ def runMotionDiscrimination(trialParams):
 
 
     ## Prepare the random walk
+    walkRefreshRate = 1/60
+    walkFrames = int(np.ceil(1 / walkRefreshRate * trialLength_s))
     arcminsPerPixel = 2.6/2
     mean = 0
     std = 4 # gives speed of 6.6 degrees per second approximately, to match what Tadin did. Note that the original continuous paper from Johannes had this at 1
-    xVelocity = np.random.normal(mean, std, size=nFrames)
-    yVelocity = np.random.normal(mean, std, size=nFrames)
+    xVelocity = np.random.normal(mean, std, size=walkFrames)
+    yVelocity = np.random.normal(mean, std, size=walkFrames)
     speed_pixelsPerFrame = (xVelocity**2 + yVelocity**2)**0.5
     speed_pixelsPerSecond = speed_pixelsPerFrame*frameRate
     speed_arcminPerSecond = speed_pixelsPerSecond * arcminsPerPixel
@@ -67,6 +70,19 @@ def runMotionDiscrimination(trialParams):
     # We will use these xPosition vectors to actually jitter the target, as well as to save out the stimulus information
     xPosition = np.cumsum(xVelocity)
     yPosition = np.cumsum(yVelocity)
+    if nFrames > walkFrames:
+        x = np.arange(0, walkFrames, walkFrames/nFrames)
+        xp = list(range(walkFrames))
+        fp = xPosition
+
+        xPosition = np.interp(x, xp, fp)
+
+        fp = yPosition
+        yPosition = np.interp(x, xp, fp)
+
+    xPosition = xPosition[0:nFrames-1]
+    yPosition = yPosition[0:nFrames-1]
+
 
     targetPositions = []
     for ii in range(len(xPosition)):

@@ -1,18 +1,40 @@
 import runMotionDiscrimination, os, datetime, getExperimentParams, random
 
 subjectID = 'giggity'
-fullScreen = True
+fullScreen = False
 useMetropsis = False
 viewingDistance = 50
 randomizeTrialOrder = True
+
+#option = 1 # jittering background of dots with stationary, smoothed target
+option = 2 # gray background, with stationary, smoothed target
 
 
 ## depending on monitor, will need to figure out screen width, pixel size, etc.
 
 trialParams = getExperimentParams.getExperimentParams('tadin2019Continuous')
 
-#trialParams.update({'contrasts': [7]})
-#trialParams.update({'targetRadii_degrees': [0.665]})
+if option == 1: # jittering background of dots with stationary, smoothed target
+    trialParams.update({'contrasts': [50]})
+    trialParams.update({'targetRadii_degrees': [7]})
+    trialParams.update({'targetOpacity': 1})
+    trialParams.update({'backgroundContrast': 50})
+    trialParams.update({'background': 'pixels'})
+    trialParams.update({'targetMask': 'raisedCos'})
+    trialParams.update({'targetMaskParams': {'fringeWidth': 0.3}})
+    trialParams.update({'randomizeBackground': True})
+elif option == 2: # gray background, with stationary, smoothed target
+    trialParams.update({'contrasts': [50]})
+    trialParams.update({'targetRadii_degrees': [7]})
+    trialParams.update({'targetOpacity': 1})
+    trialParams.update({'backgroundContrast': 0})
+    trialParams.update({'background': 'gray'})
+    trialParams.update({'targetMask': 'raisedCos'})
+    trialParams.update({'targetMaskParams': {'fringeWidth': 0.9}})
+    trialParams.update({'randomizeBackground': False})
+
+
+
 
 
 trialParams.update({'subjectID': subjectID})

@@ -34,12 +34,20 @@ def runMotionDiscrimination(trialParams):
 
     # Visual params
     contrast = trialParams['contrast']
+    if 'backgroundContrast' in trialParams:
+        backgroundContrast = trialParams['backgroundContrast']
+    else:
+        backgroundContrast = contrast
+    opacity = trialParams['targetOpacity']
     nFrames = int(np.ceil(frameRate*20))
     trialParams.update({'nFrames': nFrames})
     dotSize_degrees = trialParams['dotSize_degrees']
     circleRadius_degrees = trialParams['targetRadius_degrees']
     background = trialParams['background']
     randomizeTarget = trialParams['randomizeTarget']
+    randomizeBackground = trialParams['randomizeBackground']
+    targetMask = trialParams['targetMask']
+    targetMaskParams = trialParams['targetMaskParams']
 
 
     ## Prepare the random walk
@@ -81,15 +89,18 @@ def runMotionDiscrimination(trialParams):
     circleRadius_pixels = round(circleRadius_cm * pixelsPerCM)
 
     circleRadius_pixels = np.ceil(circleRadius_pixels/dotSize_pixels)*dotSize_pixels
+    if circleRadius_pixels/dotSize_pixels % 2 != 0:
+        circleRadius_pixels = circleRadius_pixels + 2
+
 
 
     ## Make our stimulus and background
     if background == 'gray':
-        target = visual.NoiseStim(mywin, noiseType='binary', mask='raisedCos', opacity=1, maskParams={'fringeWidth': 0.9}, size=[[circleRadius_pixels*2,circleRadius_pixels*2]], noiseElementSize=dotSize_pixels, units=units, contrast=contrast/100)
-        background = visual.NoiseStim(mywin, noiseType='binary', mask='raisedCos', opacity=0, maskParams={'fringeWidth': 0.9}, size=[100,100], noiseElementSize=dotSize_pixels, units=units, contrast=contrast/100)
+        target = visual.NoiseStim(mywin, noiseType='binary', mask=targetMask, maskParams=targetMaskParams, size=[[circleRadius_pixels*2,circleRadius_pixels*2]], noiseElementSize=dotSize_pixels, units=units, contrast=contrast/100, opacity=opacity)
+        background = visual.NoiseStim(mywin, noiseType='binary', mask='raisedCos', opacity=0, maskParams={'fringeWidth': 0.9}, size=[100,100], noiseElementSize=dotSize_pixels, units=units, contrast=backgroundContrast/100)
     elif background == 'pixels':
-        background = visual.NoiseStim(mywin, noiseType='binary', opacity=1, size=[[2000,2000]], noiseElementSize=dotSize_pixels, units=units, contrast=contrast/100)
-        target = visual.NoiseStim(mywin, noiseType='binary', size=circleRadius_pixels, noiseElementSize=dotSize_pixels, units=units, mask='circle', contrast=contrast/100)
+        target = visual.NoiseStim(mywin, noiseType='binary', size=circleRadius_pixels, noiseElementSize=dotSize_pixels, units=units, mask=targetMask, maskParams=targetMaskParams, contrast=contrast/100, opacity=opacity)
+        background = visual.NoiseStim(mywin, noiseType='binary', opacity=1, size=[1440, 900], noiseElementSize=dotSize_pixels, units=units, contrast=backgroundContrast/100)
 
     ## Display the trial setup
     # Make the pre-trial text
@@ -113,7 +124,10 @@ def runMotionDiscrimination(trialParams):
         event.clearEvents()  # clear other (eg mouse) events - they clog the buffer
 
     # Prepare for trial
-    mouse = event.Mouse()
+    #mouse = event.Mouse()
+    mouse = visual.CustomMouse(mywin)
+    pointer = visual.GratingStim(win=mywin, size=3, pos=[0,0], sf=0, color='red', units=units)
+    mouse.pointer = pointer
 
     frameTimes = []
     keyPresses = []
@@ -123,6 +137,8 @@ def runMotionDiscrimination(trialParams):
     for ii in range(nFrames):
 
         # Draw background
+        if randomizeBackground:
+            background.buildNoise()
         background.draw()
 
         # Adjust the target
@@ -130,6 +146,9 @@ def runMotionDiscrimination(trialParams):
         if randomizeTarget:
             target.buildNoise()
         target.draw()
+
+        # Update the mouse pointer
+        mouse.draw()
 
         # Update the frame
         mywin.flip()

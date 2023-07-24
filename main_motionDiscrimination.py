@@ -1,18 +1,21 @@
 import runMotionDiscrimination, os, datetime, getExperimentParams, random
 
-subjectID = 'giggity'
-fullScreen = False
+subjectID = 'harry3'
+fullScreen = True
 useMetropsis = False
 viewingDistance = 50
 randomizeTrialOrder = True
 
 #option = 1 # jittering background of dots with stationary, smoothed target
-#option = 2 # gray background, with stationary, smoothed target
-option = 3 # stationary background of uniform noise dots with stationary, smoothed target
+option = 2 # gray background, with stationary, smoothed target
+#option = 3 # stationary background of uniform noise dots with stationary, smoothed target
 
 ## depending on monitor, will need to figure out screen width, pixel size, etc.
 
 trialParams = getExperimentParams.getExperimentParams('tadin2019Continuous')
+
+trialParams.update({'contrasts': [99]})
+trialParams.update({'targetRadii_degrees': [0.75/2, 3.5]})
 
 if option == 1: # jittering background of dots with stationary, smoothed target
     trialParams.update({'contrasts': [50]})
@@ -24,8 +27,6 @@ if option == 1: # jittering background of dots with stationary, smoothed target
     trialParams.update({'targetMaskParams': {'fringeWidth': 0.3}})
     trialParams.update({'randomizeBackground': True})
 elif option == 2: # gray background, with stationary, smoothed target
-    trialParams.update({'contrasts': [50]})
-    trialParams.update({'targetRadii_degrees': [7]})
     trialParams.update({'targetOpacity': 1})
     trialParams.update({'backgroundContrast': 0})
     trialParams.update({'background': 'gray'})

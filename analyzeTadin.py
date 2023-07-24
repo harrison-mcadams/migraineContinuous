@@ -1,20 +1,47 @@
-import analyzeContinuous_new, getExperimentParams
+import analyzeContinuous_new, getExperimentParams, glob, pickle
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sb
 
 subjectID = 'contrast2,99-combined'
 experimentName = 'tadin2019Continuous'
-trialParams = getExperimentParams.getExperimentParams(experimentName)
-trialParams.update({'subjectID': subjectID})
-trialParams.update({'experimentName': 'tadin2019Continuous'})
+flexiblyDiscoverTrials = True
+inputtedContrast = []
+inputtedTargetRadii = []
+
+basicTrialParams = getExperimentParams.getExperimentParams(experimentName)
+
+# Load up an example trialParams from the session
+relevantTrialFiles = glob.glob(basicTrialParams['dataPath'] + '/' + basicTrialParams['experimentName'] + '/' + subjectID + '/**/*_raw.pkl', recursive=True)
+
+if flexiblyDiscoverTrials:
+    contrasts = []
+    targetRadii = []
+    for tt in range(len(relevantTrialFiles)):
+        with open(relevantTrialFiles[tt], 'rb') as f:
+            trialData = pickle.load(f)
+            contrasts.append(trialData['trialParams']['contrast'])
+            targetRadii.append(trialData['trialParams']['targetRadius_degrees'])
+else:
+    contrasts = inputtedContrasts
+    targetRadii = inputtedTargetRadii
+
+contrasts = list(set(contrasts))
+targetRadii = list(set(targetRadii))
+
+contrasts = np.array(np.sort(contrasts))
+targetRadii = np.array(np.sort(targetRadii))
+
+trialParams = trialData['trialParams']
+trialParams.update({'experimentName': experimentName})
+
 savePath = trialParams['analysisPath']+trialParams['experimentName']+'/'+subjectID+'/'
 nTrials = 4
 
 correlationYLims = [-0.05, 0.3]
 
-contrasts = [2, 99]
-targetRadii = np.array([0.75, 1.33, 2.33, 4, 7])*0.5
+#contrasts = [2, 99]
+#targetRadii = np.array([0.75, 1.33, 2.33, 4, 7])*0.5
 
 peaks = {'Contrast'+str(contrasts[0]): ''}
 peaksTrials = {'Contrast'+str(contrasts[0]): ''}
@@ -55,6 +82,7 @@ for cc in contrasts:
         correlogramTrialsPooler.append(correlationsPooled)
 
         peaksPerTrial = []
+        nTrials = len(gaussStatsPooled['targetVelocities-mouseVelocities'])
         for tt in range(nTrials):
             peaksPerTrial.append(gaussStatsPooled['targetVelocities-mouseVelocities'][tt]['peak'])
         peaksTrialPooler.append(peaksPerTrial)
@@ -72,6 +100,7 @@ peakErrors = {'Contrast'+str(contrasts[0]): ''}
 for cc in range(len(contrasts)):
     SEMPooled = []
     for rr in range(len(targetRadii)):
+        nTrials = len(peaksTrials['Contrast'+str(contrasts[cc])][rr][:])
         SEM = np.std(peaksTrials['Contrast'+str(contrasts[cc])][rr][:])/(nTrials**0.5)
         SEMPooled.append(SEM)
 
@@ -128,6 +157,7 @@ for cc in contrasts:
     correlationsCombinedMatrix = []
 
     for rr in range(len(targetRadii)):
+        nTrials = len(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'])
         for tt in range(nTrials):
             correlationsXMatrix.append(np.array(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'][tt]))
             correlationsYMatrix.append(np.array(correlogramTrials['Contrast'+str(cc)][rr]['targetYVelocities-mouseYVelocities'][tt]))
@@ -141,6 +171,8 @@ for cc in contrasts:
     heatmapx.set_title('X')
     yTicks = []
     for ii in range(len(targetRadii)):
+        nTrials = len(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'])
+
         yValue = (ii+1)*nTrials
         ax1.plot(np.array(range(len(correlationsTimebase))), np.ones(len(correlationsTimebase))*yValue, color='black')
         yTicks.append((ii*nTrials)+nTrials/2)
@@ -151,6 +183,8 @@ for cc in contrasts:
     heatmapy.set_xticks(xTicks, list(correlationsTimebase[xTicks[0:-1]])+ [2.0])
     heatmapy.set_title('Y')
     for ii in range(len(targetRadii)):
+        nTrials = len(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'])
+
         yValue = (ii+1)*nTrials
         ax2.plot(np.array(range(len(correlationsTimebase))), np.ones(len(correlationsTimebase))*yValue, color='black')
 
@@ -160,6 +194,8 @@ for cc in contrasts:
     heatmap.set_title('Combined')
 
     for ii in range(len(targetRadii)):
+        nTrials = len(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'])
+
         yValue = (ii+1)*nTrials
         ax3.plot(np.array(range(len(correlationsTimebase))), np.ones(len(correlationsTimebase))*yValue, color='black')
 

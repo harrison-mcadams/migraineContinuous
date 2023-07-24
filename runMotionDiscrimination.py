@@ -107,11 +107,16 @@ def runMotionDiscrimination(trialParams):
     ## Display the trial setup
     # Make the pre-trial text
     textString = 'Press Space to begin Trial '+str(trialParams['trialNumber'])+' of '+str(trialParams['totalTrials'])
-    preTrialText = visual.TextStim(win=mywin, pos=[0, 4], text=textString)
+    preTrialText = visual.TextStim(win=mywin, pos=[0, 200], text=textString)
+
+    # Show the poiniter
+    pointer = visual.GratingStim(win=mywin, size=3, pos=[0,0], sf=0, color='red', units=units)
+
 
     background.draw()
     target.draw()
     preTrialText.draw()
+    pointer.draw()
     mywin.flip()
 
     ## Await space bar to start
@@ -128,7 +133,6 @@ def runMotionDiscrimination(trialParams):
     # Prepare for trial
     #mouse = event.Mouse()
     mouse = visual.CustomMouse(mywin)
-    pointer = visual.GratingStim(win=mywin, size=3, pos=[0,0], sf=0, color='red', units=units)
     mouse.pointer = pointer
 
     frameTimes = []

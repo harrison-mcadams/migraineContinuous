@@ -6,6 +6,8 @@ def getExperimentParams(experimentName):
     basePath = os.path.expanduser('~') + '/Desktop/'
     projectName = 'migraineContinuous/'
     dataPath = basePath + projectName + 'data/'
+    analysisPath = basePath + projectName + 'analysis/'
+
     today = datetime.date.today()
     todayString = today.strftime('%Y-%m-%d')
 
@@ -17,6 +19,7 @@ def getExperimentParams(experimentName):
         'preTrialSegmentLength': 2, # s
         'basePath': basePath,
         'dataPath': dataPath,
+        'analysisPath': analysisPath,
         'projectName': projectName,
         'todayString': todayString,
         'fullScreen': True
@@ -92,7 +95,7 @@ def getExperimentParams(experimentName):
         })
 
     if experimentName == 'tadin2019Continuous':
-        trialParams.update({'targetRadii_degrees': np.array([0.43, 0.75, 1.33, 2.33, 4, 7])*0.5})
+        trialParams.update({'targetRadii_degrees': np.array([0.75, 1.33, 2.33, 4, 7])*0.5})
         trialParams.update({'dotSize_degrees': 3 / 60})
         trialParams.update({'contrasts': [7, 99]})
         trialParams.update({'randomizeTarget': False})

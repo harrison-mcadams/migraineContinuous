@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sb
 
-subjectID = 'contrast2,99'
+subjectID = 'contrast2,99-combined'
 experimentName = 'tadin2019Continuous'
 trialParams = getExperimentParams.getExperimentParams(experimentName)
 trialParams.update({'subjectID': subjectID})
 trialParams.update({'experimentName': 'tadin2019Continuous'})
 savePath = trialParams['analysisPath']+trialParams['experimentName']+'/'+subjectID+'/'
-nTrials = 2
+nTrials = 4
 
 correlationYLims = [-0.05, 0.3]
 
@@ -118,7 +118,7 @@ for cc in contrasts:
     plt.savefig(savePath + 'C' + str(cc) + '_combinedCorrelograms.png')
     plt.close()
 
-nTrials = 2
+
 xTicks = [0, 500, 1000, 1500, 2000, 2500, 2999]
 for cc in contrasts:
 
@@ -143,8 +143,7 @@ for cc in contrasts:
     for ii in range(len(targetRadii)):
         yValue = (ii+1)*nTrials
         ax1.plot(np.array(range(len(correlationsTimebase))), np.ones(len(correlationsTimebase))*yValue, color='black')
-        yValue = (ii+1)*nTrials
-        yTicks.append((ii*nTrials)+1)
+        yTicks.append((ii*nTrials)+nTrials/2)
     heatmapx.set_ylabel('Target Size (degrees)')
     heatmapx.set_xlabel('Time (s)')
 

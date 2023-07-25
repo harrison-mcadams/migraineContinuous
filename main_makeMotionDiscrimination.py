@@ -2,10 +2,10 @@ import makeMotionDiscrimination, os, datetime, getExperimentParams, random
 
 subjectID = 'player'
 fullScreen = False
-useMetropsis = False
+useMetropsis = True
 viewingDistance = 50
 randomizeTrialOrder = True
-frameRate = 60
+frameRate = 120
 
 #option = 1 # jittering background of dots with stationary, smoothed target
 option = 2 # gray background, with stationary, smoothed target
@@ -16,6 +16,10 @@ option = 2 # gray background, with stationary, smoothed target
 trialParams = getExperimentParams.getExperimentParams('tadin2019Continuous')
 
 trialParams.update({'contrasts': [100]})
+trialParams.update({'targetRadii_degrees': [7/2]})
+
+trialParams.update({'trialLength_s': 1})
+
 #trialParams.update({'targetRadii_degrees': [0.75/2, 3.5]})
 trialParams.update({'trialRepeats': 2})
 trialParams.update({'frameRate': frameRate})
@@ -52,10 +56,34 @@ if option == 3:  # stationary background of uniform noise dots with stationary, 
 
 
 
+if useMetropsis:
+    screenNumber = 0
+    screenSize = [1920, 1080]
+    screenDiagonal_cm = 31.5*2.54
+    screenWidth_cm = 70
+    screenWidth_pixels = 1920
+    backgroundSize = screenSize
+else:
+    screenNumber = 0
+    screenSize = [1440, 900]
+    screenDiagonal_cm = 13.3*2.54
+    screenWidth_cm = 13.3*30
+    screenWidth_pixels = 2560
+    backgroundSize = screenSize
+    
+
+
 trialParams.update({'subjectID': subjectID})
 trialParams.update({'fullScreen': fullScreen})
-trialParams.update({'screenNumber': 0})
+trialParams.update({'screenNumber': screenNumber})
 trialParams.update({'viewingDistance_cm': viewingDistance})
+trialParams.update({'screenSize': screenSize})
+trialParams.update({'screenWidth_cm': screenWidth_cm})
+trialParams.update({'screenWidth_pixels': screenWidth_pixels})
+trialParams.update({'screenDiagonal_cm': screenDiagonal_cm})
+trialParams.update({'backgroundSize': backgroundSize})
+
+
 
 nContrastLevels = len(trialParams['contrasts'])
 nTargetSizes = len(trialParams['targetRadii_degrees'])

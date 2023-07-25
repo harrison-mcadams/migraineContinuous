@@ -13,8 +13,10 @@ def runMotionDiscrimination(trialParams):
     screen = trialParams['screenNumber']
     units=trialParams['units']
     logging.setDefaultClock(clock.Clock())
+    screenSize = trialParams['screenSize']
+    screenDiagonal_cm = trialParams['screenDiagonal_cm']
 
-    mywin = visual.Window([1440, 900], fullscr=fullScreen, monitor='testMonitor', screen=screen,
+    mywin = visual.Window(screenSize, fullscr=fullScreen, monitor='testMonitor', screen=screen,
                           units=units)
 
     #Grab some info about that window
@@ -55,7 +57,7 @@ def runMotionDiscrimination(trialParams):
 
     ## Prepare the random walk
     walkRefreshRate = 1/60
-    walkFrames = int(np.ceil(1 / walkRefreshRate * trialLength_s))
+    walkFrames = int(np.ceil(1 / walkRefreshRate * trialLength_s))+100
     arcminsPerPixel = 2.6/2
     mean = 0
     std = 4 # gives speed of 6.6 degrees per second approximately, to match what Tadin did. Note that the original continuous paper from Johannes had this at 1
@@ -65,7 +67,7 @@ def runMotionDiscrimination(trialParams):
     speed_pixelsPerSecond = speed_pixelsPerFrame*frameRate
     speed_arcminPerSecond = speed_pixelsPerSecond * arcminsPerPixel
     speed_degreePerSecond = speed_arcminPerSecond /60
-    print(np.mean(speed_degreePerSecond))
+    print(np.mean(speed_degreePerSecond)) 
 
     # We will use these xPosition vectors to actually jitter the target, as well as to save out the stimulus information
     xPosition = np.cumsum(xVelocity)
@@ -80,8 +82,8 @@ def runMotionDiscrimination(trialParams):
         fp = yPosition
         yPosition = np.interp(x, xp, fp)
 
-    xPosition = xPosition[0:nFrames-1]
-    yPosition = yPosition[0:nFrames-1]
+    xPosition = xPosition[0:nFrames]
+    yPosition = yPosition[0:nFrames]
 
 
     targetPositions = []
@@ -91,9 +93,14 @@ def runMotionDiscrimination(trialParams):
 
 
     ## Convert distances from degrees to pixels, through centimeters
+    
+    screenWidth_cm = screenDiagonal_cm/(((screenSize[1]**2)/(screenSize[0]**2))+1)**0.5
 
-    pixelCorrectionFactor = mywin.clientSize[0]/mywin.size[0]
-    pixelsPerCM = 2560/30 * pixelCorrectionFactor
+    #pixelCorrectionFactor = mywin.clientSize[0]/mywin.size[0]
+    #pixelsPerCM = 2560/30 * pixelCorrectionFactor
+    pixelsPerCM = screenSize[0]/screenWidth_cm
+    
+    print('PixelsPerCM: ' + str(pixelsPerCM))
 
     def convertDegreesToCM(degrees, viewingDistance_cm):
         cms = 2 * viewingDistance_cm * np.tan(np.deg2rad(degrees / 2))
@@ -115,7 +122,7 @@ def runMotionDiscrimination(trialParams):
     ## Make our stimulus and background
     if background == 'gray':
         target = visual.NoiseStim(mywin, noiseType=targetNoiseType, mask=targetMask, maskParams=targetMaskParams, size=[[circleRadius_pixels*2,circleRadius_pixels*2]], noiseElementSize=dotSize_pixels, units=units, contrast=contrast/100, opacity=opacity)
-        background = visual.NoiseStim(mywin, noiseType=backgroundNoiseType, mask='raisedCos', opacity=0, maskParams={'fringeWidth': 0.9}, size=[100,100], noiseElementSize=dotSize_pixels, units=units, contrast=backgroundContrast/100)
+        background = visual.NoiseStim(mywin, noiseType=backgroundNoiseType, mask='raisedCos', opacity=0, maskParams={'fringeWidth': 0.9}, size=[[circleRadius_pixels*2,circleRadius_pixels*2]], noiseElementSize=dotSize_pixels, units=units, contrast=backgroundContrast/100)
     elif background == 'pixels':
         target = visual.NoiseStim(mywin, noiseType=targetNoiseType, size=circleRadius_pixels, noiseElementSize=dotSize_pixels, units=units, mask=targetMask, maskParams=targetMaskParams, contrast=contrast/100, opacity=opacity)
         background = visual.NoiseStim(mywin, noiseType=backgroundNoiseType, opacity=1, size=[1440, 900], noiseElementSize=dotSize_pixels, units=units, contrast=backgroundContrast/100)
@@ -224,7 +231,7 @@ def runMotionDiscrimination(trialParams):
     }
 
     # Define path
-    savePath=dataPath + trialParams['experimentLabel'] + '/' + trialParams['subjectID'] + '/' + today_string + '/'
+    savePath=dataPath + trialParams['experimentName'] + '/' + trialParams['subjectID'] + '/' + today_string + '/'
 
     # Make the output folder
     if not os.path.exists(savePath):

@@ -30,6 +30,7 @@ def getExperimentParams(experimentName):
             'centerGaborSize': 2, # degrees
             'surroundGaborSize': 0, # degrees
             'centerAnnulusSize': 0,
+            'maskShape': 'horizontalGaussian',
             'gaborContrasts': [8], # % Michelson contrast
             'gaborSpatialFrequencies': [1,8], # cycles/degree
             'trialRepeats': 4,
@@ -43,6 +44,7 @@ def getExperimentParams(experimentName):
             'centerGaborSize': 2, # degrees
             'surroundGaborSize': 0, # degrees
             'centerAnnulusSize': 0,
+            'maskShape': 'horizontalGaussian',
             'gaborContrasts': [0.5, 0.7, 1, 2, 4, 8], # % Michelson contrast
             'gaborSpatialFrequencies': [1], # cycles/degree
             'trialRepeats': 4,
@@ -91,7 +93,7 @@ def getExperimentParams(experimentName):
             'trialRepeats': 3,
             'gaussianFWHM': 0.35,  # degrees
             'speed': 3.75,  # Hz
-            'transitionSizeFactor': 1.1
+            'transitionSizeFactor': 1.2
         })
 
     if experimentName == 'tadin2019Continuous':

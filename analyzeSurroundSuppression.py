@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-subjectID = '100ms_repeats'
-experimentName = 'experiment_2_simplified'
-contrasts = [2]
+subjectID = '500ms_varyContrast'
+experimentName = 'battista'
+contrasts = [2, 50, 90]
 spatialFrequency = 1
 nTrials = 5
 

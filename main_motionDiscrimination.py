@@ -1,21 +1,21 @@
 import runMotionDiscrimination, os, datetime, getExperimentParams, random
 
-subjectID = 'metropsis'
+subjectID = 'metropsis_pixelBackground2'
 fullScreen = True
 useMetropsis = True
 viewingDistance = 50
 randomizeTrialOrder = True
 
 #option = 1 # jittering background of dots with stationary, smoothed target
-option = 2 # gray background, with stationary, smoothed target
-#option = 3 # stationary background of uniform noise dots with stationary, smoothed target
+#option = 2 # gray background, with stationary, smoothed target
+option = 3 # stationary background of uniform noise dots with stationary, smoothed target
 
 ## depending on monitor, will need to figure out screen width, pixel size, etc.
 
 trialParams = getExperimentParams.getExperimentParams('tadin2019Continuous')
 
-trialParams.update({'contrasts': [7]})
-trialParams.update({'targetRadii_degrees': [3.5]})
+#trialParams.update({'contrasts': [7]})
+#trialParams.update({'targetRadii_degrees': [3.5]})
 
 if option == 1: # jittering background of dots with stationary, smoothed target
     trialParams.update({'contrasts': [50]})
@@ -34,8 +34,6 @@ elif option == 2: # gray background, with stationary, smoothed target
     trialParams.update({'targetMaskParams': {'fringeWidth': 0.9}})
     trialParams.update({'randomizeBackground': False})
 if option == 3:  # stationary background of uniform noise dots with stationary, smoothed target
-    trialParams.update({'contrasts': [50]})
-    trialParams.update({'targetRadii_degrees': [7]})
     trialParams.update({'targetOpacity': 1})
     trialParams.update({'backgroundContrast': 50})
     trialParams.update({'background': 'pixels'})
@@ -91,7 +89,8 @@ for tt in paramsAcrossTrials:
         'targetRadius_degrees': tt[1],
         'contrast': tt[0],
         'trialNumber': trialCounter,
-        'totalTrials': len(paramsAcrossTrials)
+        'totalTrials': len(paramsAcrossTrials),
+        'backgroundContrast': tt[0]
     })
 
     print('Trial '+ str(trialParams['trialNumber']) + ' of ' + str(trialParams['totalTrials']) + '; Contrast: ' + str(trialParams['contrast']) + ', Size: ' + str(trialParams['targetRadius_degrees']))

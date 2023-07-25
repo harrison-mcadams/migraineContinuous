@@ -13,8 +13,11 @@ def makeMotionDiscrimination(trialParams):
     screen = trialParams['screenNumber']
     units=trialParams['units']
     logging.setDefaultClock(clock.Clock())
+    screenSize = trialParams['screenSize']
+    screenDiagonal_cm = trialParams['screenDiagonal_cm']
+    backgroundSize = trialParams['backgroundSize']
 
-    mywin = visual.Window([1440, 900], fullscr=fullScreen, monitor='testMonitor', screen=screen,
+    mywin = visual.Window(backgroundSize, fullscr=fullScreen, monitor='testMonitor', screen=screen,
                           units=units)
 
     #Grab some info about that window
@@ -56,7 +59,7 @@ def makeMotionDiscrimination(trialParams):
 
     ## Prepare the random walk
     walkRefreshRate = 1/60
-    walkFrames = int(np.ceil(1 / walkRefreshRate * trialLength_s))
+    walkFrames = int(np.ceil(1 / walkRefreshRate * trialLength_s))+100
     arcminsPerPixel = 2.6/2
     mean = 0
     std = 4 # gives speed of 6.6 degrees per second approximately, to match what Tadin did. Note that the original continuous paper from Johannes had this at 1
@@ -93,8 +96,11 @@ def makeMotionDiscrimination(trialParams):
 
     ## Convert distances from degrees to pixels, through centimeters
 
-    pixelCorrectionFactor = mywin.clientSize[0]/mywin.size[0]
-    pixelsPerCM = 2560/30 * pixelCorrectionFactor
+    screenWidth_cm = screenDiagonal_cm/(((screenSize[1]**2)/(screenSize[0]**2))+1)**0.5
+
+    #pixelCorrectionFactor = mywin.clientSize[0]/mywin.size[0]
+    #pixelsPerCM = 2560/30 * pixelCorrectionFactor
+    pixelsPerCM = screenSize[0]/screenWidth_cm
 
     def convertDegreesToCM(degrees, viewingDistance_cm):
         cms = 2 * viewingDistance_cm * np.tan(np.deg2rad(degrees / 2))
@@ -131,11 +137,16 @@ def makeMotionDiscrimination(trialParams):
         circle_xys = np.array(circle_xys)
         return circle_xys, colors
 
+    print('clientSize: '+str(mywin.clientSize))
     def makeBackgroundCoordinates(dotSize, mywin):
 
         fudgeFactor = 1
-        xRange = range(-int(round(mywin.clientSize[0] / 2 * fudgeFactor)), int((mywin.clientSize[0] / 2 * fudgeFactor)))
-        yRange = range(-int(round(mywin.clientSize[1] / 2 * fudgeFactor)), int(mywin.clientSize[1] / 2 * fudgeFactor))
+        #xRange = range(-int(round(mywin.clientSize[0] / 2 * fudgeFactor)), int((mywin.clientSize[0] / 2 * fudgeFactor)))
+        #yRange = range(-int(round(mywin.clientSize[1] / 2 * fudgeFactor)), int(mywin.clientSize[1] / 2 * fudgeFactor))
+
+        xRange = range(-int(backgroundSize[0]/2*fudgeFactor), int(backgroundSize[0]/2*fudgeFactor))
+        yRange = range(-int(backgroundSize[1]/2*fudgeFactor), int(backgroundSize[1]/2*fudgeFactor))
+
 
         background_xys = []
         backgroundColors = []
@@ -144,6 +155,7 @@ def makeMotionDiscrimination(trialParams):
                 background_xys.append([xx * dotSize, yy * dotSize])
                 color = random.randint(0, 1) * 2 - 1
                 backgroundColors.append([color, color, color])
+                #print(str([xx * dotSize, yy * dotSize]))
 
         background_xys = np.array(background_xys)
         return background_xys, backgroundColors
@@ -184,6 +196,7 @@ def makeMotionDiscrimination(trialParams):
         backgroundRandomizeArray = np.tile(backgroundRandomizeList, [3, 1])
         background.colors = background.colors * np.rot90(backgroundRandomizeArray)
 
+
         randomizeList = np.array([int(random.random() < 0.5) * 2 - 1 for _ in range(nDots)])
         keepList = (random.sample(range(nDots), round(nDots * proportionToPreserve)))
         randomizeList[keepList] = 1
@@ -193,9 +206,10 @@ def makeMotionDiscrimination(trialParams):
 
         circle.fieldPos = [xPosition[i], yPosition[i]]  # this will make the thing vertically
         circle.draw()
-        # mywin.flip()
+        #mywin.flip()
         frameTimes.append(mywin.lastFrameT)
         mywin.getMovieFrame(buffer='back')
+        
 
     # Define path
     savePath=dataPath + trialParams['experimentName'] + '/' + trialParams['subjectID'] + '/' + today_string + '/'
@@ -205,7 +219,7 @@ def makeMotionDiscrimination(trialParams):
     if not os.path.exists(savePath):
         os.makedirs(savePath)
 
-    mywin.saveMovieFrames(savePath + startTime + '_S' + str(trialParams['targetRadius_degrees']) + '_C' + str(trialParams['contrast']) + '.mp4', fps=60)
+    mywin.saveMovieFrames(savePath + startTime + '_S' + str(trialParams['targetRadius_degrees']) + '_C' + str(trialParams['contrast']) + '.mp4', fps=frameRate)
 
     ## Package up the data to save out
     # Set the timebase relative to trial start

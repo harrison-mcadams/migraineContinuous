@@ -95,6 +95,10 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency, tri
         surrounds.append((np.array(surroundValues_resampled) + 1) / 2)
         responses.append((np.array(responseValues_resampled)+1)/2)
 
+        #stimuli.append(np.array(stimulusValues_resampled))
+        #surrounds.append(np.array(surroundValues_resampled))
+        #responses.append(np.array(responseValues_resampled))
+
 
         # Remove nan values, which correspond to timepoints prior to first response input
         responses[tt] = np.delete(responses[tt], nanValues)
@@ -148,7 +152,7 @@ def analyzeContinuous(subjectID, experimentName, contrast, spatialFrequency, tri
                 stimulusVector.extend(surrounds[tt])
                 stimulusType = 'surround'
 
-        useNumpy = True
+        useNumpy = False
 
         firstTimepoint = -1
         lastTimepoint = 2

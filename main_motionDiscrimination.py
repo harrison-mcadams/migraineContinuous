@@ -1,15 +1,15 @@
 import runMotionDiscrimination, os, datetime, getExperimentParams, random
 
 subjectID = 'debug'
-fullScreen = False
+fullScreen = True
 useMetropsis = False
 viewingDistance = 50
 randomizeTrialOrder = True
 
 #option = 1 # jittering background of dots with stationary, smoothed target
-option = 2 # gray background, with stationary, smoothed target
+#option = 2 # gray background, with stationary, smoothed target
 #option = 3 # stationary background of uniform noise dots with stationary, smoothed target
-#option = 4 # elementArrayMethod. random background with coherent but random target
+option = 4 # elementArrayMethod. random background with coherent but random target
 
 ## depending on monitor, will need to figure out screen width, pixel size, etc.
 
@@ -44,9 +44,9 @@ if option == 3:  # stationary background of uniform noise dots with stationary, 
     trialParams.update({'targetMaskParams': {'fringeWidth': 0.3}})
     trialParams.update({'randomizeBackground': False})
 if option == 4: # elementArrayMethod. background of random pixels, with target with variable coherence
-    trialParams.update({'backgroundScaleFactor': 2})
+    trialParams.update({'backgroundScaleFactor': 1.25})
     trialParams.update({'targetMethod': 'ElementArrayStim'})
-    trialParams.update({'proportionToPreserve': 1})
+    trialParams.update({'proportionToPreserve': 0.7})
     trialParams.update({'targetIterations': 10})
     trialParams.update({'backgroundMethod': 'pixels'})
 

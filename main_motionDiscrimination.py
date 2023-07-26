@@ -1,47 +1,54 @@
 import runMotionDiscrimination, os, datetime, getExperimentParams, random
 
-subjectID = 'metropsis_pixelBackground2'
-fullScreen = True
-useMetropsis = True
+subjectID = 'debug'
+fullScreen = False
+useMetropsis = False
 viewingDistance = 50
 randomizeTrialOrder = True
 
 #option = 1 # jittering background of dots with stationary, smoothed target
-#option = 2 # gray background, with stationary, smoothed target
-option = 3 # stationary background of uniform noise dots with stationary, smoothed target
+option = 2 # gray background, with stationary, smoothed target
+#option = 3 # stationary background of uniform noise dots with stationary, smoothed target
+#option = 4 # elementArrayMethod. random background with coherent but random target
 
 ## depending on monitor, will need to figure out screen width, pixel size, etc.
 
 trialParams = getExperimentParams.getExperimentParams('tadin2019Continuous')
 
-#trialParams.update({'contrasts': [7]})
-#trialParams.update({'targetRadii_degrees': [3.5]})
+trialParams.update({'contrasts': [99]})
+trialParams.update({'targetRadii_degrees': [3.5]})
 
 if option == 1: # jittering background of dots with stationary, smoothed target
     trialParams.update({'contrasts': [50]})
     trialParams.update({'targetRadii_degrees': [7]})
     trialParams.update({'targetOpacity': 1})
     trialParams.update({'backgroundContrast': 50})
-    trialParams.update({'background': 'pixels'})
+    trialParams.update({'backgroundMethod': 'pixels'})
     trialParams.update({'targetMask': 'raisedCos'})
     trialParams.update({'targetMaskParams': {'fringeWidth': 0.3}})
     trialParams.update({'randomizeBackground': True})
 elif option == 2: # gray background, with stationary, smoothed target
     trialParams.update({'targetOpacity': 1})
     trialParams.update({'backgroundContrast': 0})
-    trialParams.update({'background': 'gray'})
+    trialParams.update({'backgroundMethod': 'gray'})
     trialParams.update({'targetMask': 'raisedCos'})
     trialParams.update({'targetMaskParams': {'fringeWidth': 0.9}})
     trialParams.update({'randomizeBackground': False})
 if option == 3:  # stationary background of uniform noise dots with stationary, smoothed target
     trialParams.update({'targetOpacity': 1})
     trialParams.update({'backgroundContrast': 50})
-    trialParams.update({'background': 'pixels'})
+    trialParams.update({'backgroundMethod': 'pixels'})
     trialParams.update({'targetNoiseType': 'uniform'})
     trialParams.update({'backgroundNoiseType': 'uniform'})
     trialParams.update({'targetMask': 'raisedCos'})
     trialParams.update({'targetMaskParams': {'fringeWidth': 0.3}})
     trialParams.update({'randomizeBackground': False})
+if option == 4: # elementArrayMethod. background of random pixels, with target with variable coherence
+    trialParams.update({'backgroundScaleFactor': 2})
+    trialParams.update({'targetMethod': 'ElementArrayStim'})
+    trialParams.update({'proportionToPreserve': 1})
+    trialParams.update({'targetIterations': 10})
+    trialParams.update({'backgroundMethod': 'pixels'})
 
 if useMetropsis:
     screenNumber = 1
@@ -63,7 +70,6 @@ trialParams.update({'fullScreen': fullScreen})
 trialParams.update({'screenNumber': screenNumber})
 trialParams.update({'viewingDistance_cm': viewingDistance})
 trialParams.update({'screenSize': screenSize})
-trialParams.update({'screenWidth_cm': screenWidth_cm})
 trialParams.update({'screenWidth_pixels': screenWidth_pixels})
 trialParams.update({'screenDiagonal_cm': screenDiagonal_cm})
 

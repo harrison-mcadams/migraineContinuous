@@ -46,13 +46,18 @@ def runMotionDiscrimination(trialParams):
     trialParams.update({'nFrames': nFrames})
     dotSize_degrees = trialParams['dotSize_degrees']
     circleRadius_degrees = trialParams['targetRadius_degrees']
-    background = trialParams['background']
+    backgroundMethod = trialParams['backgroundMethod']
     randomizeTarget = trialParams['randomizeTarget']
     randomizeBackground = trialParams['randomizeBackground']
     targetNoiseType = trialParams['targetNoiseType']
     backgroundNoiseType = trialParams['backgroundNoiseType']
     targetMask = trialParams['targetMask']
     targetMaskParams = trialParams['targetMaskParams']
+    backgroundScaleFactor = trialParams['backgroundScaleFactor']
+    targetMethod = trialParams['targetMethod']
+    targetIterations = trialParams['targetIterations']
+    proportionToPreserve = trialParams['proportionToPreserve']
+
 
 
     ## Prepare the random walk
@@ -120,17 +125,100 @@ def runMotionDiscrimination(trialParams):
 
 
     ## Make our stimulus and background
-    if background == 'gray':
-        target = visual.NoiseStim(mywin, noiseType=targetNoiseType, mask=targetMask, maskParams=targetMaskParams, size=[[circleRadius_pixels*2,circleRadius_pixels*2]], noiseElementSize=dotSize_pixels, units=units, contrast=contrast/100, opacity=opacity)
+    if backgroundMethod == 'gray':
         background = visual.NoiseStim(mywin, noiseType=backgroundNoiseType, mask='raisedCos', opacity=0, maskParams={'fringeWidth': 0.9}, size=[[circleRadius_pixels*2,circleRadius_pixels*2]], noiseElementSize=dotSize_pixels, units=units, contrast=backgroundContrast/100)
-    elif background == 'pixels':
-        target = visual.NoiseStim(mywin, noiseType=targetNoiseType, size=circleRadius_pixels, noiseElementSize=dotSize_pixels, units=units, mask=targetMask, maskParams=targetMaskParams, contrast=contrast/100, opacity=opacity)
-        background = visual.NoiseStim(mywin, noiseType=backgroundNoiseType, opacity=1, size=screenSize, noiseElementSize=dotSize_pixels, units=units, contrast=backgroundContrast/100)
+    elif backgroundMethod == 'pixels':
+        background = visual.NoiseStim(mywin, noiseType=backgroundNoiseType, opacity=1, size=[screenSize[0]*backgroundScaleFactor, screenSize[1]*backgroundScaleFactor], noiseElementSize=dotSize_pixels, units=units, contrast=backgroundContrast/100)
+
+    # Prep for background jiggle
+    randomBackgroundOrigins = []
+    for ii in range(nFrames):
+
+        outerBackgroundOriginX = (backgroundScaleFactor * screenSize[0] / 2) - (screenSize[0] / 2)
+        outerBackgroundOriginY = (backgroundScaleFactor * screenSize[1] / 2) - (screenSize[1] / 2)
+
+        backgroundOriginX = random.randint(-outerBackgroundOriginX, outerBackgroundOriginX)
+        backgroundOriginY = random.randint(-outerBackgroundOriginY, outerBackgroundOriginY)
+        randomBackgroundOrigins.append([backgroundOriginX, backgroundOriginY])
+
+    if targetMethod == 'NoiseStim':
+        target = visual.NoiseStim(mywin, noiseType=targetNoiseType, mask=targetMask, maskParams=targetMaskParams,
+                              size=[[circleRadius_pixels * 2, circleRadius_pixels * 2]],
+                              noiseElementSize=dotSize_pixels, units=units, contrast=contrast / 100, opacity=opacity)
+    elif targetMethod == 'ElementArrayStim':
+
+        # Manually construct a circle made up of individual dots
+        def makeCircleCoordinates(circleRadius, dotSize):
+
+            radius_inDots = int(np.ceil(circleRadius / dotSize))
+
+            circle_xys = []
+            colors = []
+            for xx in range(-radius_inDots, radius_inDots + 1):
+                for yy in range(-radius_inDots, radius_inDots + 1):
+                    if (xx ** 2 + yy ** 2) ** 0.5 <= radius_inDots:
+                        circle_xys.append([xx * dotSize, yy * dotSize])
+                        color = random.randint(0, 1) * 2 - 1
+                        colors.append([color, color, color])
+
+            colors = np.array(colors)
+            circle_xys = np.array(circle_xys)
+            return circle_xys, colors
+
+        # Get the xy coordinates and their colors
+        circle_xys, colors = makeCircleCoordinates(circleRadius_pixels, dotSize_pixels)
+
+        # Make the target
+        target = visual.ElementArrayStim(win=mywin, units='pixels',
+                                         nElements=len(circle_xys),
+                                         elementTex=None,
+                                         elementMask='circle',
+                                         xys=circle_xys,
+                                         sizes=[dotSize_pixels*1.1, dotSize_pixels*1.1],
+                                         colors=colors*contrast/100,
+                                         fieldPos=[0, 0]
+                                         )
+
+        ## If we're doing element array stim, we have to do a lot more background work to get it up and running
+
+        circleIndicesToIterate = []
+        nDots = len(circle_xys)
+        for ii in range(targetIterations):
+            indices = (random.sample(range(nDots), round(nDots * proportionToPreserve)))
+            circleIndicesToIterate.append(indices)
+
+
+        # Get ready to make the shuffle on each iteration
+        verticesBase = target.verticesBase
+        verticesPix = target.verticesPix
+        sizes = target.sizes
+        oris = target.oris
+        opacities = target.opacities
+        sfs = target.sfs
+        phases = target.phases
+
+        randomCircleIndices = []
+        for ii in range(nFrames):
+            randomCircleIndices.append(random.randint(0,targetIterations-1))
+
+        target.nElements = len(circleIndicesToIterate[0])
+        target.sizes = sizes[circleIndicesToIterate[0]]
+        target.oris = oris[circleIndicesToIterate[0]]
+        target.opacities = opacities[circleIndicesToIterate[0]]
+        target.sfs = sfs[circleIndicesToIterate[0]]
+        target.phases = phases[circleIndicesToIterate[0]]
+
+        target.verticesBase = verticesBase[circleIndicesToIterate[0]]
+        target.verticesPix = verticesPix[circleIndicesToIterate[0]]
+        target.xys = circle_xys[circleIndicesToIterate[0]]
+        target.colors = colors[circleIndicesToIterate[0]]*contrast/100
+
+
 
     ## Display the trial setup
     # Make the pre-trial text
     textString = 'Press Space to begin Trial '+str(trialParams['trialNumber'])+' of '+str(trialParams['totalTrials'])
-    preTrialText = visual.TextStim(win=mywin, pos=[0, 200], text=textString)
+    preTrialText = visual.TextStim(win=mywin, pos=[0, 200], text=textString, color='red')
 
     # Show the poiniter
     pointer = visual.GratingStim(win=mywin, size=3, pos=[0,0], sf=0, color='red', units=units)
@@ -170,14 +258,21 @@ def runMotionDiscrimination(trialParams):
     for ii in range(nFrames):
 
         # Draw background
-        if randomizeBackground:
-            background.buildNoise()
+        background.pos = randomBackgroundOrigins[ii]
         background.draw()
 
         # Adjust the target
-        target.pos = [xPosition[ii], yPosition[ii]]
-        if randomizeTarget:
-            target.buildNoise()
+        if targetMethod == 'NoiseStim':
+            target.pos = [xPosition[ii], yPosition[ii]]
+            if randomizeTarget:
+                target.buildNoise()
+        elif targetMethod == 'ElementArrayStim':
+            randomIndex = randomCircleIndices[ii]
+            target.xys = circle_xys[circleIndicesToIterate[randomIndex]]
+            target.colors = colors[circleIndicesToIterate[randomIndex]] * contrast / 100
+            target.fieldPos = [xPosition[ii], yPosition[ii]]  # this will make the thing vertically
+
+
         target.draw()
 
         # Update the mouse pointer

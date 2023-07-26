@@ -132,14 +132,20 @@ def runMotionDiscrimination(trialParams):
 
     # Prep for background jiggle
     randomBackgroundOrigins = []
+    backgroundRandomFactor = 3
     for ii in range(nFrames):
 
-        outerBackgroundOriginX = (backgroundScaleFactor * screenSize[0] / 2) - (screenSize[0] / 2)
-        outerBackgroundOriginY = (backgroundScaleFactor * screenSize[1] / 2) - (screenSize[1] / 2)
+        outerBackgroundOriginX = np.floor((backgroundScaleFactor * screenSize[0] / 2) - (screenSize[0] / 2))
+        outerBackgroundOriginY = np.floor((backgroundScaleFactor * screenSize[1] / 2) - (screenSize[1] / 2))
 
         backgroundOriginX = random.randint(-outerBackgroundOriginX, outerBackgroundOriginX)
         backgroundOriginY = random.randint(-outerBackgroundOriginY, outerBackgroundOriginY)
-        randomBackgroundOrigins.append([backgroundOriginX, backgroundOriginY])
+
+        if ii % backgroundRandomFactor == 0:
+            randomBackgroundOrigins.append([0,0])
+        else:
+            randomBackgroundOrigins.append([backgroundOriginX, backgroundOriginY])
+
 
     if targetMethod == 'NoiseStim':
         target = visual.NoiseStim(mywin, noiseType=targetNoiseType, mask=targetMask, maskParams=targetMaskParams,
@@ -344,6 +350,23 @@ def runMotionDiscrimination(trialParams):
         for ii in range(len(frameTimes)):
             g.write(str(frameTimes[ii]) + ',' + str(targetPositions[ii][0]) +',' + str(targetPositions[ii][1]) + ',' + str(mousePositions[ii][0]) + ',' + str(mousePositions[ii][1]) + '\n')
     g.close()
+
+    # Print out plot of frame performance
+    frameIntervals = np.diff(frameTimes*1000)
+    meanInterval = np.mean(frameIntervals)
+    nDroppedFrames = sum(i > 1/frameRate*1.2*1000 for i in frameIntervals)
+    droppedFramesPercentage = nDroppedFrames/len(frameIntervals)*100
+    droppedFramesPercentage_rounded = round(droppedFramesPercentage, 3)
+    meanInterval_rounded = round(meanInterval, 3)
+
+
+    plt.plot(frameIntervals)
+    plt.xlabel('Frames (n)')
+    plt.ylabel('Frame Interval (ms)')
+    plt.title('Mean Frame Interval: '+str(meanInterval_rounded)+', '+str(droppedFramesPercentage_rounded)+'% Dropped Frames')
+    plt.savefig(savePath + startTime + '_S' + str(trialParams['targetRadius_degrees']) + '_C' + str(
+            trialParams['contrast'])+'_frames.png')
+    plt.close()
 
     # For support
     print('boom')

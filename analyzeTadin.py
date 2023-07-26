@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sb
 
-subjectID = 'contrast2,99-combined'
+subjectID = 'debug'
 experimentName = 'tadin2019Continuous'
 flexiblyDiscoverTrials = True
 inputtedContrast = []
@@ -106,8 +106,9 @@ for cc in range(len(contrasts)):
 
     peakErrors.update({'Contrast'+str(contrasts[cc]): SEMPooled})
 
-plt.errorbar(np.log(targetRadii*2), peaks['Contrast'+str(contrasts[0])], peakErrors['Contrast'+str(contrasts[0])], label='Contrast: '+str(contrasts[0]))
-plt.errorbar(np.log(targetRadii*2), peaks['Contrast'+str(contrasts[1])], peakErrors['Contrast'+str(contrasts[1])], label='Contrast: '+str(contrasts[1]))
+for cc in contrasts:
+    plt.errorbar(np.log(targetRadii*2), peaks['Contrast'+str(cc)], peakErrors['Contrast'+str(cc)], label='Contrast: '+str(cc))
+#plt.errorbar(np.log(targetRadii*2), peaks['Contrast'+str(contrasts[1])], peakErrors['Contrast'+str(contrasts[1])], label='Contrast: '+str(contrasts[1]))
 plt.xticks(np.log(targetRadii*2), targetRadii*2)
 plt.xlabel('Stimulus Size (degrees)')
 plt.ylabel('Kernel Peak (r)')
@@ -115,8 +116,9 @@ plt.legend()
 plt.savefig(savePath + 'CRF_peaks.png')
 plt.close()
 
-plt.plot(np.log(targetRadii*2), lags['Contrast'+str(contrasts[0])], label='Contrast: '+str(contrasts[0]))
-plt.plot(np.log(targetRadii*2), lags['Contrast'+str(contrasts[1])], label='Contrast: '+str(contrasts[1]))
+for cc in contrasts:
+    plt.plot(np.log(targetRadii*2), lags['Contrast'+str(cc)], label='Contrast: '+str(cc))
+    #plt.plot(np.log(targetRadii*2), lags['Contrast'+str(contrasts[1])], label='Contrast: '+str(contrasts[1]))
 plt.xticks(np.log(targetRadii*2), targetRadii*2)
 plt.xlabel('Stimulus Size (degrees)')
 plt.ylabel('Kernel Lag (s)')
@@ -124,8 +126,9 @@ plt.legend()
 plt.savefig(savePath + 'CRF_lags.png')
 plt.close()
 
-plt.plot(np.log(targetRadii*2), widths['Contrast'+str(contrasts[0])], label='Contrast: '+str(contrasts[0]))
-plt.plot(np.log(targetRadii*2), widths['Contrast'+str(contrasts[1])], label='Contrast: '+str(contrasts[1]))
+for cc in contrasts:
+    plt.plot(np.log(targetRadii*2), widths['Contrast'+str(cc)], label='Contrast: '+str(cc))
+#plt.plot(np.log(targetRadii*2), widths['Contrast'+str(contrasts[1])], label='Contrast: '+str(contrasts[1]))
 plt.xticks(np.log(targetRadii*2), targetRadii*2)
 plt.xlabel('Stimulus Size (degrees)')
 plt.ylabel('Kernel Width (FWHM, s)')

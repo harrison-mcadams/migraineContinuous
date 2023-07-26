@@ -101,7 +101,7 @@ def getExperimentParams(experimentName):
         trialParams.update({'dotSize_degrees': 3 / 60})
         trialParams.update({'contrasts': [7, 99]})
         trialParams.update({'randomizeTarget': False})
-        trialParams.update({'background': 'gray'})
+        trialParams.update({'backgroundMethod': 'gray'})
         trialParams.update({'units': 'pix'})
         trialParams.update({'trialLength_s': 20})
         trialParams.update({'trialRepeats': 3})
@@ -111,5 +111,10 @@ def getExperimentParams(experimentName):
         trialParams.update({'randomizeBackground': False})
         trialParams.update({'backgroundNoiseType': 'binary'})
         trialParams.update({'targetNoiseType': 'binary'})
+        trialParams.update({'backgroundScaleFactor': 1})
+        trialParams.update({'targetMethod': 'NoiseStim'})
+        trialParams.update({'proportionToPreserve': 0.5})
+        trialParams.update({'targetIterations': 10})
+
 
     return trialParams

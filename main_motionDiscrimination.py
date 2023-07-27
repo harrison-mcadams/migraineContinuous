@@ -118,7 +118,7 @@ for tt in paramsAcrossTrials:
 
     print('Trial '+ str(trialParams['trialNumber']) + ' of ' + str(trialParams['totalTrials']) + '; Contrast: ' + str(trialParams['contrast']) + ', Size: ' + str(trialParams['targetRadius_degrees']))
 
-
+    mywin.mouseVisible = True
 
     runMotionDiscrimination.runMotionDiscrimination(mywin, trialParams)
 

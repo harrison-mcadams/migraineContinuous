@@ -1,7 +1,8 @@
 import runMotionDiscrimination, os, datetime, getExperimentParams, random
 import numpy as np
+from psychopy import logging, clock, visual
 
-subjectID = 'debug'
+subjectID = '50backgroundContrast_randomPixelBackground_dotSize4'
 fullScreen = True
 useMetropsis = True
 viewingDistance = 50
@@ -16,11 +17,11 @@ option = 4 # elementArrayMethod. random background with coherent but random targ
 
 trialParams = getExperimentParams.getExperimentParams('tadin2019Continuous')
 
-trialParams.update({'contrasts': [99]})
-trialParams.update({'backgroundContrast': 0})
+trialParams.update({'contrasts': [2, 99]})
+trialParams.update({'backgroundContrast': 50})
 
 trialParams.update({'targetRadii_degrees': np.array([0.75, 1.33, 2.33, 4, 7, 12])*0.5})
-trialParams.update({'targetRadii_degrees': np.array([12])*0.5})
+#trialParams.update({'targetRadii_degrees': np.array([12])*0.5})
 
 # 1.5, 3, 6, 12 degrees diameter
 
@@ -50,7 +51,7 @@ if option == 3:  # stationary background of uniform noise dots with stationary, 
     trialParams.update({'targetMaskParams': {'fringeWidth': 0.3}})
     trialParams.update({'randomizeBackground': False})
 if option == 4: # elementArrayMethod. background of random pixels, with target with variable coherence
-    trialParams.update({'backgroundScaleFactor': 1})
+    trialParams.update({'backgroundScaleFactor': 1.25})
     trialParams.update({'targetMethod': 'ElementArrayStim'})
     trialParams.update({'proportionToPreserve': 0.5})
     trialParams.update({'targetIterations': 5})
@@ -93,6 +94,17 @@ for cc in range(nContrastLevels):
 if randomizeTrialOrder:
     random.shuffle(paramsAcrossTrials)
 
+    ## Make window
+screenSize = trialParams['screenSize']
+fullScreen = trialParams['fullScreen']
+screen = trialParams['screenNumber']
+units=trialParams['units']
+logging.setDefaultClock(clock.Clock())
+screenDiagonal_cm = trialParams['screenDiagonal_cm']
+
+mywin = visual.Window(screenSize, fullscr=fullScreen, monitor='testMonitor', screen=screen,
+                          units=units)
+
 trialCounter = 1
 for tt in paramsAcrossTrials:
 
@@ -106,7 +118,9 @@ for tt in paramsAcrossTrials:
 
     print('Trial '+ str(trialParams['trialNumber']) + ' of ' + str(trialParams['totalTrials']) + '; Contrast: ' + str(trialParams['contrast']) + ', Size: ' + str(trialParams['targetRadius_degrees']))
 
-    runMotionDiscrimination.runMotionDiscrimination(trialParams)
+
+
+    runMotionDiscrimination.runMotionDiscrimination(mywin, trialParams)
 
     trialCounter = trialCounter + 1
     print(trialCounter)

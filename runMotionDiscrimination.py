@@ -1,6 +1,6 @@
-def runMotionDiscrimination(trialParams):
+def runMotionDiscrimination(mywin, trialParams):
 
-    from psychopy import visual, core, event, logging, clock
+    from psychopy import visual, core, event, clock, logging
     import numpy as np
     import random
     import datetime
@@ -9,18 +9,13 @@ def runMotionDiscrimination(trialParams):
     import copy
     import matplotlib.pyplot as plt
 
-    ## Make window
+    #Grab some info about the window
+    screenSize = trialParams['screenSize']
     fullScreen = trialParams['fullScreen']
     screen = trialParams['screenNumber']
     units=trialParams['units']
     logging.setDefaultClock(clock.Clock())
-    screenSize = trialParams['screenSize']
     screenDiagonal_cm = trialParams['screenDiagonal_cm']
-
-    mywin = visual.Window(screenSize, fullscr=fullScreen, monitor='testMonitor', screen=screen,
-                          units=units)
-
-    #Grab some info about that window
     mywin.recordFrameIntervals = True
     frameRate = mywin.getActualFrameRate()
     trialParams.update({'frameRate': frameRate})

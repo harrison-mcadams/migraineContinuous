@@ -115,6 +115,8 @@ def getExperimentParams(experimentName):
         trialParams.update({'targetMethod': 'NoiseStim'})
         trialParams.update({'proportionToPreserve': 0.5})
         trialParams.update({'targetIterations': 10})
-
+        trialParams.update({'backgroundRandomFactor': 99999})
+        trialParams.update({'circleFWHM_degrees': 7/2})
+        trialParams.update({'fringeWidth': 0.9})
 
     return trialParams

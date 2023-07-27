@@ -57,6 +57,8 @@ def runMotionDiscrimination(trialParams):
     targetMethod = trialParams['targetMethod']
     targetIterations = trialParams['targetIterations']
     proportionToPreserve = trialParams['proportionToPreserve']
+    backgroundRandomFactor = trialParams['backgroundRandomFactor']
+    circleFWHM_degrees = trialParams['circleFWHM_degrees']
 
 
 
@@ -189,9 +191,58 @@ def runMotionDiscrimination(trialParams):
 
         circleIndicesToIterate = []
         nDots = len(circle_xys)
-        for ii in range(targetIterations):
+        for tt in range(targetIterations):
             indices = (random.sample(range(nDots), round(nDots * proportionToPreserve)))
-            circleIndicesToIterate.append(indices)
+
+            useRaisedCosine = True
+            if useRaisedCosine:
+
+
+                gaussianFWHM_cm = convertDegreesToCM(circleFWHM_degrees, viewingDistance_cm)
+                gaussianSigma_pixels = round(gaussianFWHM_cm * pixelsPerCM)
+
+
+
+                indices = range(-int(circleRadius_pixels), int(circleRadius_pixels))
+                #pdf = visual.filters.makeGauss(np.array((indices)), mean=0.0, sd=gaussianSigma_pixels, gain=1.0, base=0.0)
+
+                pdf = 1/(2*circleRadius_pixels)*(1+np.cos(np.array(indices)*np.pi/circleRadius_pixels))
+                pdf = pdf/max(pdf)
+
+                thisCircle = []
+                indexCounter = 0
+                for ii in circle_xys:
+                    x = ii[0]
+                    y = ii[1]
+                    xProbability = pdf[indices[x]]
+                    yProbability = pdf[indices[y]]
+                    totalProbability = xProbability * yProbability * proportionToPreserve
+                    if random.random() < totalProbability:
+                        thisCircle.append(indexCounter)
+                    indexCounter = indexCounter + 1
+
+                if len(thisCircle) > round(nDots * proportionToPreserve):
+                    keepIndices = (random.sample(range(len(thisCircle)), round(nDots * proportionToPreserve)))
+                    thisCircle = thisCircle[keepIndices]
+
+                elif len(thisCircle) < round(nDots * proportionToPreserve):
+                    #thisCircle = thisCircle+list(np.zeros([1,round(nDots * proportionToPreserve)-len(thisCircle)]))
+                    zerosToPad = list(np.zeros(round(nDots * proportionToPreserve) - len(thisCircle), dtype=np.int8))
+                    thisCircle.extend(zerosToPad)
+                circleIndicesToIterate.append(thisCircle)
+
+                #for xx in indices:
+                 #   for yy in indices:
+                 #       xProbability = pdf[xx]
+                 #       xProbability = pdf[yy]
+                 #       totalProbability = xProbability * yProbability * proportionToPreserve
+                 #       if random.random() < totalProbability
+                 #           circleIndicesToIterate.append()
+                #makeGauss(x, mean=0.0, sd=1.0, gain=1.0, base=0.0)
+
+
+            else:
+                circleIndicesToIterate.append(indices)
 
 
         # Get ready to make the shuffle on each iteration

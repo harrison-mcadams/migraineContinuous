@@ -6,6 +6,7 @@ def runMotionDiscrimination(trialParams):
     import datetime
     import pickle
     import os
+    import copy
     import matplotlib.pyplot as plt
 
     ## Make window
@@ -270,6 +271,14 @@ def runMotionDiscrimination(trialParams):
         target.xys = circle_xys[circleIndicesToIterate[0]]
         target.colors = colors[circleIndicesToIterate[0]]*contrast/100
 
+        pooledTargets = []
+        for ii in range(targetIterations):
+
+            newTarget = copy.copy(target)
+            newTarget.xys = circle_xys[circleIndicesToIterate[ii]]
+            newTarget.colors = colors[circleIndicesToIterate[ii]] * contrast / 100
+            pooledTargets.append(newTarget)
+
 
 
     ## Display the trial setup
@@ -323,14 +332,16 @@ def runMotionDiscrimination(trialParams):
             target.pos = [xPosition[ii], yPosition[ii]]
             if randomizeTarget:
                 target.buildNoise()
+            target.draw()
+
         elif targetMethod == 'ElementArrayStim':
             randomIndex = randomCircleIndices[ii]
-            target.xys = circle_xys[circleIndicesToIterate[randomIndex]]
-            target.colors = colors[circleIndicesToIterate[randomIndex]] * contrast / 100
-            target.fieldPos = [xPosition[ii], yPosition[ii]]  # this will make the thing vertically
+            #target.xys = circle_xys[circleIndicesToIterate[randomIndex]]
+            #target.colors = colors[circleIndicesToIterate[randomIndex]] * contrast / 100
+            #target.fieldPos = [xPosition[ii], yPosition[ii]]  # this will make the thing vertically
 
-
-        target.draw()
+            pooledTargets[randomIndex].fieldPos = [xPosition[ii], yPosition[ii]]
+            pooledTargets[randomIndex].draw()
 
         # Update the mouse pointer
         mouse.draw()

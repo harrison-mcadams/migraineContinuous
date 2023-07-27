@@ -1,8 +1,9 @@
 import runMotionDiscrimination, os, datetime, getExperimentParams, random
+import numpy as np
 
 subjectID = 'debug'
-fullScreen = False
-useMetropsis = False
+fullScreen = True
+useMetropsis = True
 viewingDistance = 50
 randomizeTrialOrder = True
 
@@ -16,7 +17,12 @@ option = 4 # elementArrayMethod. random background with coherent but random targ
 trialParams = getExperimentParams.getExperimentParams('tadin2019Continuous')
 
 trialParams.update({'contrasts': [99]})
-trialParams.update({'targetRadii_degrees': [7/2]})
+trialParams.update({'backgroundContrast': 0})
+
+trialParams.update({'targetRadii_degrees': np.array([0.75, 1.33, 2.33, 4, 7, 12])*0.5})
+trialParams.update({'targetRadii_degrees': np.array([12])*0.5})
+
+# 1.5, 3, 6, 12 degrees diameter
 
 if option == 1: # jittering background of dots with stationary, smoothed target
     trialParams.update({'contrasts': [50]})
@@ -36,7 +42,7 @@ elif option == 2: # gray background, with stationary, smoothed target
     trialParams.update({'randomizeBackground': False})
 if option == 3:  # stationary background of uniform noise dots with stationary, smoothed target
     trialParams.update({'targetOpacity': 1})
-    trialParams.update({'backgroundContrast': 50})
+    trialParams.update({'backgroundContrast': 100})
     trialParams.update({'backgroundMethod': 'pixels'})
     trialParams.update({'targetNoiseType': 'uniform'})
     trialParams.update({'backgroundNoiseType': 'uniform'})
@@ -44,13 +50,12 @@ if option == 3:  # stationary background of uniform noise dots with stationary, 
     trialParams.update({'targetMaskParams': {'fringeWidth': 0.3}})
     trialParams.update({'randomizeBackground': False})
 if option == 4: # elementArrayMethod. background of random pixels, with target with variable coherence
-    trialParams.update({'backgroundScaleFactor': 1.25})
+    trialParams.update({'backgroundScaleFactor': 1})
     trialParams.update({'targetMethod': 'ElementArrayStim'})
     trialParams.update({'proportionToPreserve': 0.5})
-    trialParams.update({'targetIterations': 10})
+    trialParams.update({'targetIterations': 5})
     trialParams.update({'backgroundMethod': 'pixels'})
     trialParams.update({'backgroundRandomFactor': 99999})
-    trialParams.update({'backgroundContrast': 2})
     trialParams.update({'circleFWHM_degrees': 7 / 2})
     trialParams.update({'fringeWidth': 0.9})
 
@@ -59,12 +64,10 @@ if useMetropsis:
     screenNumber = 1
     screenSize = [1920, 1080]
     screenDiagonal_cm = 31.5*2.54
-    screenWidth_pixels = 1920
 else:
     screenNumber = 0
     screenSize = [1440, 900]
     screenDiagonal_cm = 13.3*2.54
-    screenWidth_pixels = 2560
     
 
 
@@ -73,7 +76,6 @@ trialParams.update({'fullScreen': fullScreen})
 trialParams.update({'screenNumber': screenNumber})
 trialParams.update({'viewingDistance_cm': viewingDistance})
 trialParams.update({'screenSize': screenSize})
-trialParams.update({'screenWidth_pixels': screenWidth_pixels})
 trialParams.update({'screenDiagonal_cm': screenDiagonal_cm})
 
 

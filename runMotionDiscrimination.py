@@ -149,6 +149,15 @@ def runMotionDiscrimination(mywin, trialParams):
         target = visual.NoiseStim(mywin, noiseType=targetNoiseType, mask=targetMask, maskParams=targetMaskParams,
                               size=[[circleRadius_pixels * 2, circleRadius_pixels * 2]],
                               noiseElementSize=dotSize_pixels, units=units, contrast=contrast / 100, opacity=opacity)
+    elif targetMethod == 'GratingStim':
+
+        sf_cyclesPerDegree = 1
+        CMsPerDegree = convertDegreesToCM(1, viewingDistance_cm)
+        sf_cyclesPerCM = sf_cyclesPerDegree / CMsPerDegree
+        sf_cyclesPerPixel = sf_cyclesPerCM / pixelsPerCM
+
+        target = visual.GratingStim(win=mywin, mask='gauss', units=units, size=[[circleRadius_pixels * 2, circleRadius_pixels * 2]],  contrast=contrast / 100, sf=sf_cyclesPerPixel)
+
     elif targetMethod == 'ElementArrayStim':
 
         # Manually construct a circle made up of individual dots
@@ -323,7 +332,7 @@ def runMotionDiscrimination(mywin, trialParams):
         background.draw()
 
         # Adjust the target
-        if targetMethod == 'NoiseStim':
+        if targetMethod == 'NoiseStim' or targetMethod == 'GratingStim':
             target.pos = [xPosition[ii], yPosition[ii]]
             if randomizeTarget:
                 target.buildNoise()

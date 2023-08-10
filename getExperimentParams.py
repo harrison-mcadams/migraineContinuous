@@ -98,7 +98,7 @@ def getExperimentParams(experimentName):
 
     if experimentName == 'tadin2019Continuous':
         trialParams.update({'targetRadii_degrees': np.array([0.75, 1.33, 2.33, 4, 7])*0.5})
-        trialParams.update({'dotSize_degrees': 3 / 60})
+        trialParams.update({'dotSize_degrees': 4 / 60})
         trialParams.update({'contrasts': [7, 99]})
         trialParams.update({'randomizeTarget': False})
         trialParams.update({'backgroundMethod': 'gray'})

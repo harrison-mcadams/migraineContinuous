@@ -361,6 +361,24 @@ def runMotionDiscrimination(mywin, trialParams):
     # Set the timebase relative to trial start
     frameTimes = np.array(frameTimes) - frameTimes[0]
 
+    # Quantify performance to provide feedback
+
+    score = 0
+    scoreSigma = pixelsPerCM
+    for ii in range(nFrames):
+        distance = ((mousePositions[ii][0] - xPosition[ii]) ** 2 + (mousePositions[ii][1] - yPosition[ii]) ** 2) ** 0.5
+        thisScore = visual.filters.makeGauss(distance, mean=0, sd=scoreSigma, gain=1, base=0)
+        score = score + thisScore * 1/nFrames
+
+    trialParams.update({'score': score})
+    trialParams.update({'scoreSigma': pixelsPerCM})
+
+    scoreRounded = round(score*100, 2)
+    textString = 'Score: '+str(scoreRounded)+'%'
+    feedbackText = visual.TextStim(win=mywin, pos=[0, 0], text=textString, color='red')
+    feedbackText.draw()
+    mywin.flip()
+
     # Get velocities
     targetXVelocities = []
     targetYVelocities = []

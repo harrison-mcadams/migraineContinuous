@@ -2,9 +2,9 @@ import runMotionDiscrimination, os, datetime, getExperimentParams, random
 import numpy as np
 from psychopy import logging, clock, visual
 
-subjectID = '50backgroundContrast_randomPixelBackground_dotSize4'
+subjectID = 'macbook_dotSize4_backgroundStationaryPixelatedAtCenterContrast_debug'
 fullScreen = True
-useMetropsis = True
+useMetropsis = False
 viewingDistance = 50
 randomizeTrialOrder = True
 
@@ -17,10 +17,17 @@ option = 4 # elementArrayMethod. random background with coherent but random targ
 
 trialParams = getExperimentParams.getExperimentParams('tadin2019Continuous')
 
-trialParams.update({'contrasts': [2, 99]})
+trialParams.update({'contrasts': [7, 99]})
 trialParams.update({'backgroundContrast': 50})
 
-trialParams.update({'targetRadii_degrees': np.array([0.75, 1.33, 2.33, 4, 7, 12])*0.5})
+#trialParams.update({'targetRadii_degrees': np.array([1, 2, 4, 8, 16])*0.5})
+#trialParams.update({'targetRadii_degrees': np.array([0.75, 1.5, 3, 6, 12])*0.5})
+#trialParams.update({'targetRadii_degrees': np.array([16])*0.5})
+trialParams.update({'targetRadii_degrees': np.array([0.75, 1.33, 2.33, 4, 7])*0.5}) # directly replicating Tadi
+#trialParams.update({'targetRadii_degrees': [np.array(0.43)*0.5]}) # directly replicating Tadi
+#trialParams.update({'targetRadii_degrees': np.array([7])*0.5})
+
+
 #trialParams.update({'targetRadii_degrees': np.array([12])*0.5})
 
 # 1.5, 3, 6, 12 degrees diameter
@@ -51,7 +58,7 @@ if option == 3:  # stationary background of uniform noise dots with stationary, 
     trialParams.update({'targetMaskParams': {'fringeWidth': 0.3}})
     trialParams.update({'randomizeBackground': False})
 if option == 4: # elementArrayMethod. background of random pixels, with target with variable coherence
-    trialParams.update({'backgroundScaleFactor': 1.25})
+    trialParams.update({'backgroundScaleFactor': 1.5})
     trialParams.update({'targetMethod': 'ElementArrayStim'})
     trialParams.update({'proportionToPreserve': 0.5})
     trialParams.update({'targetIterations': 5})

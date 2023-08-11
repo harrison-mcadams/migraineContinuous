@@ -51,6 +51,9 @@ def fitTadin(sizes, peaks, contrasts):
         for size in sizes:
             for contrast in contrasts:
 
+                if contrast > 1:
+                    contrast = contrast/100
+
                 E = 1-np.e**(-(size**2/alpha**2)/2)
                 I = 1-np.e**(-(size**2/beta**2)/2)
 

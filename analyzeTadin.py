@@ -1,3 +1,8 @@
+subjectID = 'gaborPilot'
+inputtedContrasts = []
+inputtedTargetRadii = []
+load = False
+
 def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, load):
 
     import analyzeContinuous_new, getExperimentParams, glob, pickle
@@ -279,4 +284,4 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, load):
 
     return peaks, contrasts, targetRadii
 
-analyzeTadin('gaborPilot', [], [], True)
+analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, load)

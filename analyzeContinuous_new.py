@@ -203,12 +203,13 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
         # Fit a Gaussian to cross correlogram
 
         def func(x, lag, width, peak):
-            return visual.filters.makeGauss(x, mean=lag, sd=width, gain=peak, base=0)
+            return visual.filters.makeGauss(np.log(x), mean=np.log(lag), sd=np.log(width), gain=peak, base=0)
 
         # Do the fit
-        popt, pcov = curve_fit(func, correlationTimebase, correlogram, p0=[shift, 0.4, maxCorrelation],
-                               bounds=([0, 0, -1], [2, 0.5, 1]))
-        lag = popt[0]
+        popt, pcov = curve_fit(func, range(len(correlogram)), correlogram, p0=[indexOfMaxCorrelation, 0.4, maxCorrelation])
+                            #p0=[shift, 0.4, maxCorrelation])
+                               #bounds=([0, 0, -1], [2, 0.5, 1]))
+        lag = correlationTimebase[0] + popt[0]*(correlationTimebase[1]-correlationTimebase[0])
         width_sigma = popt[1]
         width_fwhm = width_sigma * ((8 * np.log(2)) ** 0.5)
         peak = popt[2]
@@ -216,7 +217,7 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
         width_fwhm_rounded = round(width_fwhm, 3)
         lag_rounded = round(lag, 3)
 
-        y_pred = func(correlationTimebase, *popt)
+        y_pred = func(range(len(correlogram)), *popt)
 
         SSres = sum((np.array(correlogram) - np.array(y_pred)) ** 2)
         SStot = sum((np.array(correlogram) - np.mean(correlogram)) ** 2)
@@ -229,7 +230,7 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
         fitStats.update({'R2': r2})
 
         plt.plot(correlationTimebase, correlogram, label='CCG')
-        plt.plot(correlationTimebase, func(correlationTimebase, *popt), label='Fit')
+        plt.plot(correlationTimebase, y_pred, label='Fit')
         plt.legend()
         plt.title('Peak: ' + str(peak_rounded) + ', Lag: ' + str(lag_rounded) + ', Width: ' + str(
             width_fwhm_rounded) + ', R2 = ' + str(r2_rounded))

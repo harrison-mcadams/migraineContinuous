@@ -42,6 +42,7 @@ def runMotionDiscrimination(mywin, trialParams):
     trialParams.update({'nFrames': nFrames})
     dotSize_degrees = trialParams['dotSize_degrees']
     circleRadius_degrees = trialParams['targetRadius_degrees']
+    centerRadius_degrees = trialParams['centerRadius_degrees']
     backgroundMethod = trialParams['backgroundMethod']
     randomizeTarget = trialParams['randomizeTarget']
     randomizeBackground = trialParams['randomizeBackground']
@@ -88,6 +89,9 @@ def runMotionDiscrimination(mywin, trialParams):
     xPosition = xPosition[0:nFrames]
     yPosition = yPosition[0:nFrames]
 
+    if trialParams['1DMotion']:
+        yPosition = np.zeros(len(yPosition))
+
 
     targetPositions = []
     for ii in range(len(xPosition)):
@@ -112,9 +116,11 @@ def runMotionDiscrimination(mywin, trialParams):
 
     dotSize_cm = convertDegreesToCM(dotSize_degrees, viewingDistance_cm)
     circleRadius_cm = convertDegreesToCM(circleRadius_degrees, viewingDistance_cm)
+    centerRadius_cm = convertDegreesToCM(centerRadius_degrees, viewingDistance_cm)
 
     dotSize_pixels = round(dotSize_cm * pixelsPerCM)
     circleRadius_pixels = round(circleRadius_cm * pixelsPerCM)
+    centerRadius_pixels = round(centerRadius_cm * pixelsPerCM)
 
     circleRadius_pixels = np.ceil(circleRadius_pixels/dotSize_pixels)*dotSize_pixels
     if circleRadius_pixels/dotSize_pixels % 2 != 0:
@@ -124,7 +130,7 @@ def runMotionDiscrimination(mywin, trialParams):
 
     ## Make our stimulus and background
     if backgroundMethod == 'gray':
-        background = visual.NoiseStim(mywin, noiseType=backgroundNoiseType, mask='raisedCos', opacity=0, maskParams={'fringeWidth': 0.9}, size=[[circleRadius_pixels*2,circleRadius_pixels*2]], noiseElementSize=dotSize_pixels, units=units, contrast=backgroundContrast/100)
+        background = visual.NoiseStim(mywin, noiseType=backgroundNoiseType, mask='raisedCos', opacity=0, maskParams={'fringeWidth': 0.9}, size=[2*dotSize_pixels,2*dotSize_pixels], noiseElementSize=dotSize_pixels, units=units, contrast=backgroundContrast/100)
     elif backgroundMethod == 'pixels':
         background = visual.NoiseStim(mywin, noiseType=backgroundNoiseType, opacity=1, size=[screenSize[0]*backgroundScaleFactor, screenSize[1]*backgroundScaleFactor], noiseElementSize=dotSize_pixels, units=units, contrast=backgroundContrast/100)
 
@@ -145,6 +151,8 @@ def runMotionDiscrimination(mywin, trialParams):
             randomBackgroundOrigins.append([backgroundOriginX, backgroundOriginY])
 
 
+    targetCenter = visual.Circle(mywin, radius=centerRadius_pixels, color=[0,0,0], units=units)
+
     if targetMethod == 'NoiseStim':
         target = visual.NoiseStim(mywin, noiseType=targetNoiseType, mask=targetMask, maskParams=targetMaskParams,
                               size=[[circleRadius_pixels * 2, circleRadius_pixels * 2]],
@@ -157,6 +165,12 @@ def runMotionDiscrimination(mywin, trialParams):
         sf_cyclesPerPixel = sf_cyclesPerCM / pixelsPerCM
 
         target = visual.GratingStim(win=mywin, mask='gauss', units=units, size=[[circleRadius_pixels * 2, circleRadius_pixels * 2]],  contrast=contrast / 100, sf=sf_cyclesPerPixel)
+    elif targetMethod == 'RadialStim':
+        x = np.array(range(256))
+        texture = np.sin(x)
+        target = visual.RadialStim(win=mywin, mask='gauss', units=units,
+                                size=[[circleRadius_pixels * 2, circleRadius_pixels * 2]], contrast=contrast / 100,
+                                radialCycles=circleRadius_degrees * 2, angularCycles = 0)
 
     elif targetMethod == 'ElementArrayStim':
 
@@ -296,6 +310,7 @@ def runMotionDiscrimination(mywin, trialParams):
 
     background.draw()
     target.draw()
+    targetCenter.draw()
     preTrialText.draw()
     pointer.draw()
     mywin.flip()
@@ -332,11 +347,13 @@ def runMotionDiscrimination(mywin, trialParams):
         background.draw()
 
         # Adjust the target
-        if targetMethod == 'NoiseStim' or targetMethod == 'GratingStim':
+        if targetMethod == 'NoiseStim' or targetMethod == 'GratingStim' or targetMethod == 'RadialStim':
             target.pos = [xPosition[ii], yPosition[ii]]
+            targetCenter.pos = [xPosition[ii], yPosition[ii]]
             if randomizeTarget:
                 target.buildNoise()
             target.draw()
+            targetCenter.draw()
 
         elif targetMethod == 'ElementArrayStim':
             randomIndex = randomCircleIndices[ii]
@@ -348,6 +365,8 @@ def runMotionDiscrimination(mywin, trialParams):
             pooledTargets[randomIndex].draw()
 
         # Update the mouse pointer
+
+
         mouse.draw()
 
         # Update the frame

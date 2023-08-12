@@ -98,8 +98,14 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
 
     ## Perform the cross correlation
     if trialParams['experimentName'] == 'tadin2019Continuous':
-        stimulusNames = ['targetXVelocities', 'targetYVelocities']
-        responseNames = ['mouseXVelocities', 'mouseYVelocities']
+        if trialParams['1DMotion']:
+            stimulusNames = ['targetXVelocities']
+            responseNames = ['mouseXVelocities']
+            combineXY = False
+        else:
+            stimulusNames = ['targetXVelocities', 'targetYVelocities']
+            responseNames = ['mouseXVelocities', 'mouseYVelocities']
+            combineXY = True
     else:
         stimulusNames = ['stimulusDirections', 'surroundDirections']
         responseNames = ['responseDirections', 'responseDirections']
@@ -155,8 +161,8 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
 
     if performTrialwise:
 
-        correlationsPooled = {stimulusNames[1]+'-'+responseNames[1]: ''}
-        meanCorrelations = {stimulusNames[1]+'-'+responseNames[1]: ''}
+        correlationsPooled = {stimulusNames[0]+'-'+responseNames[0]: ''}
+        meanCorrelations = {stimulusNames[0]+'-'+responseNames[0]: ''}
         for cc in range(len(stimulusNames)):
             correlationsByTrial = []
 
@@ -188,7 +194,7 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
             #meanResponse = np.array(summedResponse)/nTrials
             meanResponse = np.nanmean(np.array(combinedResponse), 0)
             meanCorrelations.update({stimulusNames[cc] + '-' + responseNames[cc]: meanResponse})
-        if trialParams['experimentName'] == 'tadin2019Continuous':
+        if combineXY:
             meanCorrelations.update({'targetVelocities-mouseVelocities': (meanCorrelations['targetXVelocities-mouseXVelocities'] + meanCorrelations['targetYVelocities-mouseYVelocities'])/2})
 
     ## Fit the cross correlation
@@ -206,7 +212,8 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
             return visual.filters.makeGauss(np.log(x), mean=np.log(lag), sd=np.log(width), gain=peak, base=0)
 
         # Do the fit
-        popt, pcov = curve_fit(func, range(len(correlogram)), correlogram, p0=[indexOfMaxCorrelation, 0.4, maxCorrelation])
+        popt, pcov = curve_fit(func, range(len(correlogram)), correlogram, p0=[indexOfMaxCorrelation, 1.1, maxCorrelation],
+                               bounds = ([time0, 0, -1], [len(correlogram), 2, 1]))
                             #p0=[shift, 0.4, maxCorrelation])
                                #bounds=([0, 0, -1], [2, 0.5, 1]))
         lag = correlationTimebase[0] + popt[0]*(correlationTimebase[1]-correlationTimebase[0])
@@ -245,8 +252,8 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
 
     if performTrialwise:
 
-        gaussStats = {stimulusNames[1] + '-' + responseNames[1]: ''}
-        gaussStatsPooled = {stimulusNames[1] + '-' + responseNames[1]: ''}
+        gaussStats = {stimulusNames[0] + '-' + responseNames[0]: ''}
+        gaussStatsPooled = {stimulusNames[0] + '-' + responseNames[0]: ''}
 
         for cc in range(len(stimulusNames)):
 
@@ -270,25 +277,26 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
 
         gaussStatsPooled.update({stimulusNames[cc] + '-' + responseNames[cc]: fitStats_pooledAcrossTrials})
 
-        if trialParams['experimentName'] == 'tadin2019Continuous':
-            correlogram = (meanCorrelations['targetXVelocities-mouseXVelocities'] + meanCorrelations['targetYVelocities-mouseYVelocities'])/2
-            saveSuffix = ''
-            stimulusName = 'targetVelocities'
-            responseName = 'mouseVelocities'
+        if combineXY:
+            if trialParams['experimentName'] == 'tadin2019Continuous':
+                correlogram = (meanCorrelations['targetXVelocities-mouseXVelocities'] + meanCorrelations['targetYVelocities-mouseYVelocities'])/2
+                saveSuffix = ''
+                stimulusName = 'targetVelocities'
+                responseName = 'mouseVelocities'
 
-            fitStats_perComparison = fitGaussian(correlogram, correlationTimebase, stimulusName, responseName, saveSuffix)
-            gaussStats.update({stimulusName+'-'+responseName: fitStats_perComparison})
+                fitStats_perComparison = fitGaussian(correlogram, correlationTimebase, stimulusName, responseName, saveSuffix)
+                gaussStats.update({stimulusName+'-'+responseName: fitStats_perComparison})
 
-            fitStats_pooledAcrossTrials = []
-            for tt in range(nTrials):
-                correlogram = (np.array(correlationsPooled['targetXVelocities-mouseXVelocities'][tt])+np.array(correlationsPooled['targetYVelocities-mouseYVelocities'][tt]))/2
+                fitStats_pooledAcrossTrials = []
+                for tt in range(nTrials):
+                    correlogram = (np.array(correlationsPooled['targetXVelocities-mouseXVelocities'][tt])+np.array(correlationsPooled['targetYVelocities-mouseYVelocities'][tt]))/2
 
-                fitStats_perTrial = fitGaussian(correlogram, correlationTimebase, 'targetVelocities',
-                                                     'mouseVelocities', '_trial'+str(tt+1))
+                    fitStats_perTrial = fitGaussian(correlogram, correlationTimebase, 'targetVelocities',
+                                                         'mouseVelocities', '_trial'+str(tt+1))
 
-                fitStats_pooledAcrossTrials.append(fitStats_perTrial)
+                    fitStats_pooledAcrossTrials.append(fitStats_perTrial)
 
-            gaussStatsPooled.update({'targetVelocities-mouseVelocities': fitStats_pooledAcrossTrials})
+                gaussStatsPooled.update({'targetVelocities-mouseVelocities': fitStats_pooledAcrossTrials})
 
 
     return meanCorrelations, correlationsPooled, gaussStats, gaussStatsPooled

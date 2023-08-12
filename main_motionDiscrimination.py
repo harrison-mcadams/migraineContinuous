@@ -2,9 +2,9 @@ import runMotionDiscrimination, os, datetime, getExperimentParams, random
 import numpy as np
 from psychopy import logging, clock, visual
 
-subjectID = 'gaborPilot'
+subjectID = 'horizontalPilot_S1.25-20_2'
 fullScreen = True
-useMetropsis = True
+useMetropsis = False
 viewingDistance = 50
 randomizeTrialOrder = True
 
@@ -12,22 +12,39 @@ randomizeTrialOrder = True
 #option = 2 # gray background, with stationary, smoothed target
 #option = 3 # stationary background of uniform noise dots with stationary, smoothed target
 #option = 4 # elementArrayMethod. random background with coherent but random target
-option = 5 # gabor over graybackground
+#option = 5 # gabor over graybackground
+option = 6 # horizontal motion
 
 ## depending on monitor, will need to figure out screen width, pixel size, etc.
 
 trialParams = getExperimentParams.getExperimentParams('tadin2019Continuous')
 
+# main params
 trialParams.update({'contrasts': [2, 99]})
 trialParams.update({'backgroundContrast': 50})
+#trialParams.update({'targetRadii_degrees': np.array([1.33, 2.33, 4, 7, 12])*0.5}) # Tadin + 12degrees
+trialParams.update({'targetRadii_degrees': [1,2,4,8,16]}) # Tadin + 12degrees
+trialParams.update({'targetRadii_degrees': [0.75, 1.5, 3, 6, 12]}) # Tadin + 12degrees
+trialParams.update({'targetRadii_degrees': [0.625, 1.25, 2.5, 5.0, 10.0]}) # Tadin + 12degrees
+
+
+
+
+
+
+#trialParams.update({'contrasts': [99]})
+#trialParams.update({'backgroundContrast': 50})
+#trialParams.update({'targetRadii_degrees': np.array([12])*0.5})
+
 
 #trialParams.update({'targetRadii_degrees': np.array([1, 2, 4, 8, 16])*0.5})
 #trialParams.update({'targetRadii_degrees': np.array([0.75, 1.5, 3, 6, 12])*0.5})
 #trialParams.update({'targetRadii_degrees': np.array([16])*0.5})
 #trialParams.update({'targetRadii_degrees': np.array([0.75, 1.33, 2.33, 4, 7])*0.5}) # directly replicating Tadi
-trialParams.update({'targetRadii_degrees': np.array([1.33, 2.33, 4, 7, 12])*0.5}) # Tadin + 12degrees
 #trialParams.update({'targetRadii_degrees': [np.array(0.43)*0.5]}) # directly replicating Tadi
 #trialParams.update({'targetRadii_degrees': np.array([1.33, 7])*0.5})
+
+
 
 
 #trialParams.update({'targetRadii_degrees': np.array([12])*0.5})
@@ -68,10 +85,19 @@ if option == 4: # elementArrayMethod. background of random pixels, with target w
     trialParams.update({'backgroundRandomFactor': 99999})
     trialParams.update({'circleFWHM_degrees': 7 / 2})
     trialParams.update({'fringeWidth': 0.9})
-if option == 5:  # elementArrayMethod. background of random pixels, with target with variable coherence
+if option == 5:  # Gabor target, gray background
+    trialParams.update({'backgroundContrast': 0})
+    #trialParams.update({'targetMethod': 'GratingStim'})
+    trialParams.update({'targetMethod': 'RadialStim'})
+    #trialParams.update({'centerRadius_degrees': 0.1})
+    trialParams.update({'centerRadius_degrees': 0})
+if option == 6:  # gabor target, greybackground, horizontal motion
     trialParams.update({'backgroundContrast': 0})
     trialParams.update({'targetMethod': 'GratingStim'})
-
+    #trialParams.update({'targetMethod': 'RadialStim'})
+    trialParams.update({'centerRadius_degrees': 0.1})
+    #trialParams.update({'centerRadius_degrees': 0})
+    trialParams.update({'1DMotion': True})
 
 
 if useMetropsis:

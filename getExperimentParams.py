@@ -118,5 +118,7 @@ def getExperimentParams(experimentName):
         trialParams.update({'backgroundRandomFactor': 99999})
         trialParams.update({'circleFWHM_degrees': 7/2})
         trialParams.update({'fringeWidth': 0.9})
+        trialParams.update({'centerRadius_degrees': 0})
+        trialParams.update({'1DMotion': False})
 
     return trialParams

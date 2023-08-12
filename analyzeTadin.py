@@ -1,9 +1,14 @@
-subjectID = 'gaborPilot'
+import numpy as np
+
+subjectID = 'horizontalPilot_S1.25-20_2'
+#inputtedContrasts = [2, 99]
+#inputtedTargetRadii = np.array([1.33, 2.33, 4, 7, 12])*0.5
+load = False
 inputtedContrasts = []
 inputtedTargetRadii = []
-load = False
+comparison = 'targetXVelocities-mouseXVelocities'
 
-def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, load):
+def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load):
 
     import analyzeContinuous_new, getExperimentParams, glob, pickle
     import matplotlib.pyplot as plt
@@ -11,6 +16,7 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, load):
     import seaborn as sb
 
     experimentName = 'tadin2019Continuous'
+    #experimentName = 'horizontalContinuous'
 
     if inputtedContrasts == [] and inputtedTargetRadii == []:
         flexiblyDiscoverTrials = True
@@ -33,6 +39,9 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, load):
     else:
         contrasts = inputtedContrasts
         targetRadii = inputtedTargetRadii
+        for tt in range(len(relevantTrialFiles)):
+            with open(relevantTrialFiles[tt], 'rb') as f:
+                trialData = pickle.load(f)
 
     contrasts = list(set(contrasts))
     targetRadii = list(set(targetRadii))
@@ -87,23 +96,23 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, load):
                 trialParams.update({'contrast': cc})
 
                 meanCorrelations, correlationsPooled, gaussStats, gaussStatsPooled = analyzeContinuous_new.analyzeContinuous_new(subjectID, experimentName, trialParams)
-                peak = gaussStats['targetVelocities-mouseVelocities']['peak']
+                peak = gaussStats[comparison]['peak']
                 peakPooler.append(peak)
-                lag = gaussStats['targetVelocities-mouseVelocities']['lag']
+                lag = gaussStats[comparison]['lag']
                 lagPooler.append(lag)
-                width = gaussStats['targetVelocities-mouseVelocities']['width']
+                width = gaussStats[comparison]['width']
                 widthPooler.append(width)
-                correlogramPooler.append(meanCorrelations['targetVelocities-mouseVelocities'])
+                correlogramPooler.append(meanCorrelations[comparison])
                 correlogramTrialsPooler.append(correlationsPooled)
 
                 peaksPerTrial = []
                 widthsPerTrial = []
                 lagsPerTrial = []
-                nTrials = len(gaussStatsPooled['targetVelocities-mouseVelocities'])
+                nTrials = len(gaussStatsPooled[comparison])
                 for tt in range(nTrials):
-                    peaksPerTrial.append(gaussStatsPooled['targetVelocities-mouseVelocities'][tt]['peak'])
-                    widthsPerTrial.append(gaussStatsPooled['targetVelocities-mouseVelocities'][tt]['width'])
-                    lagsPerTrial.append(gaussStatsPooled['targetVelocities-mouseVelocities'][tt]['lag'])
+                    peaksPerTrial.append(gaussStatsPooled[comparison][tt]['peak'])
+                    widthsPerTrial.append(gaussStatsPooled[comparison][tt]['width'])
+                    lagsPerTrial.append(gaussStatsPooled[comparison][tt]['lag'])
 
 
                 peaksTrialPooler.append(peaksPerTrial)
@@ -198,60 +207,61 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, load):
 
 
         xTicks = [0, 500, 1000, 1500, 2000, 2500, 2999]
-        for cc in contrasts:
+        if comparison == 'targetVelocities-mouseVelocities':
+            for cc in contrasts:
 
-            #correlationPlot = plt.figure()
-            correlationsXMatrix = []
-            correlationsYMatrix = []
-            correlationsCombinedMatrix = []
+                #correlationPlot = plt.figure()
+                correlationsXMatrix = []
+                correlationsYMatrix = []
+                correlationsCombinedMatrix = []
 
-            for rr in range(len(targetRadii)):
-                nTrials = len(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'])
-                for tt in range(nTrials):
-                    correlationsXMatrix.append(np.array(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'][tt]))
-                    correlationsYMatrix.append(np.array(correlogramTrials['Contrast'+str(cc)][rr]['targetYVelocities-mouseYVelocities'][tt]))
-                    correlationsCombinedMatrix.append((np.array(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'][tt]) + np.array(
-                correlogramTrials['Contrast'+str(cc)][rr]['targetYVelocities-mouseYVelocities'][tt])) / 2)
+                for rr in range(len(targetRadii)):
+                    nTrials = len(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'])
+                    for tt in range(nTrials):
+                        correlationsXMatrix.append(np.array(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'][tt]))
+                        correlationsYMatrix.append(np.array(correlogramTrials['Contrast'+str(cc)][rr]['targetYVelocities-mouseYVelocities'][tt]))
+                        correlationsCombinedMatrix.append((np.array(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'][tt]) + np.array(
+                    correlogramTrials['Contrast'+str(cc)][rr]['targetYVelocities-mouseYVelocities'][tt])) / 2)
 
-            fig, (ax1, ax2, ax3) = plt.subplots(1, 3,
-                                           sharey='row', figsize = (15,5))
-            heatmapx = sb.heatmap(ax=ax1, data=correlationsXMatrix, vmin=correlationYLims[0], vmax=correlationYLims[1])
-            heatmapx.set_xticks(xTicks, list(correlationsTimebase[xTicks[0:-1]])+ [2.0])
-            heatmapx.set_title('X')
-            yTicks = []
-            for ii in range(len(targetRadii)):
-                nTrials = len(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'])
+                fig, (ax1, ax2, ax3) = plt.subplots(1, 3,
+                                               sharey='row', figsize = (15,5))
+                heatmapx = sb.heatmap(ax=ax1, data=correlationsXMatrix, vmin=correlationYLims[0], vmax=correlationYLims[1])
+                heatmapx.set_xticks(xTicks, list(correlationsTimebase[xTicks[0:-1]])+ [2.0])
+                heatmapx.set_title('X')
+                yTicks = []
+                for ii in range(len(targetRadii)):
+                    nTrials = len(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'])
 
-                yValue = (ii+1)*nTrials
-                ax1.plot(np.array(range(len(correlationsTimebase))), np.ones(len(correlationsTimebase))*yValue, color='black')
-                yTicks.append((ii*nTrials)+nTrials/2)
-            heatmapx.set_ylabel('Target Size (degrees)')
-            heatmapx.set_xlabel('Time (s)')
+                    yValue = (ii+1)*nTrials
+                    ax1.plot(np.array(range(len(correlationsTimebase))), np.ones(len(correlationsTimebase))*yValue, color='black')
+                    yTicks.append((ii*nTrials)+nTrials/2)
+                heatmapx.set_ylabel('Target Size (degrees)')
+                heatmapx.set_xlabel('Time (s)')
 
-            heatmapy = sb.heatmap(ax=ax2, data=correlationsYMatrix, vmin=correlationYLims[0], vmax=correlationYLims[1])
-            heatmapy.set_xticks(xTicks, list(correlationsTimebase[xTicks[0:-1]])+ [2.0])
-            heatmapy.set_title('Y')
-            for ii in range(len(targetRadii)):
-                nTrials = len(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'])
+                heatmapy = sb.heatmap(ax=ax2, data=correlationsYMatrix, vmin=correlationYLims[0], vmax=correlationYLims[1])
+                heatmapy.set_xticks(xTicks, list(correlationsTimebase[xTicks[0:-1]])+ [2.0])
+                heatmapy.set_title('Y')
+                for ii in range(len(targetRadii)):
+                    nTrials = len(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'])
 
-                yValue = (ii+1)*nTrials
-                ax2.plot(np.array(range(len(correlationsTimebase))), np.ones(len(correlationsTimebase))*yValue, color='black')
+                    yValue = (ii+1)*nTrials
+                    ax2.plot(np.array(range(len(correlationsTimebase))), np.ones(len(correlationsTimebase))*yValue, color='black')
 
 
-            heatmap = sb.heatmap(ax=ax3, data=correlationsCombinedMatrix, vmin=correlationYLims[0], vmax=correlationYLims[1])
-            heatmap.set_xticks(xTicks, list(correlationsTimebase[xTicks[0:-1]])+ [2.0])
-            heatmap.set_title('Combined')
+                heatmap = sb.heatmap(ax=ax3, data=correlationsCombinedMatrix, vmin=correlationYLims[0], vmax=correlationYLims[1])
+                heatmap.set_xticks(xTicks, list(correlationsTimebase[xTicks[0:-1]])+ [2.0])
+                heatmap.set_title('Combined')
 
-            for ii in range(len(targetRadii)):
-                nTrials = len(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'])
+                for ii in range(len(targetRadii)):
+                    nTrials = len(correlogramTrials['Contrast'+str(cc)][rr]['targetXVelocities-mouseXVelocities'])
 
-                yValue = (ii+1)*nTrials
-                ax3.plot(np.array(range(len(correlationsTimebase))), np.ones(len(correlationsTimebase))*yValue, color='black')
+                    yValue = (ii+1)*nTrials
+                    ax3.plot(np.array(range(len(correlationsTimebase))), np.ones(len(correlationsTimebase))*yValue, color='black')
 
-            heatmapx.set_yticks(yTicks, np.array(targetRadii)*2.0)
-            fig.suptitle('Contrast ' + str(cc) + '%')
-            fig.savefig(savePath + 'C' + str(cc) + '_trialCorrelograms.png')
-            plt.close()
+                heatmapx.set_yticks(yTicks, np.array(targetRadii)*2.0)
+                fig.suptitle('Contrast ' + str(cc) + '%')
+                fig.savefig(savePath + 'C' + str(cc) + '_trialCorrelograms.png')
+                plt.close()
 
         results = {
             'peaks': peaks,
@@ -284,4 +294,4 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, load):
 
     return peaks, contrasts, targetRadii
 
-analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, load)
+analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load)

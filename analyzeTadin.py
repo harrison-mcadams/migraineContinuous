@@ -1,6 +1,6 @@
 import numpy as np
 
-subjectID = 'horizontalPilot_S1.25-20_2'
+subjectID = 'horizontalPilot_S1.25-20_combined'
 #inputtedContrasts = [2, 99]
 #inputtedTargetRadii = np.array([1.33, 2.33, 4, 7, 12])*0.5
 load = False
@@ -262,6 +262,39 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
                 fig.suptitle('Contrast ' + str(cc) + '%')
                 fig.savefig(savePath + 'C' + str(cc) + '_trialCorrelograms.png')
                 plt.close()
+        else:
+            for cc in contrasts:
+
+                # correlationPlot = plt.figure()
+                correlationsMatrix = []
+
+
+                for rr in range(len(targetRadii)):
+                    nTrials = len(correlogramTrials['Contrast' + str(cc)][rr][comparison])
+                    for tt in range(nTrials):
+                        correlationsMatrix.append(
+                            np.array(correlogramTrials['Contrast' + str(cc)][rr][comparison][tt]))
+
+                ax1 = plt.axes()
+                heatmapx = sb.heatmap(ax=ax1, data=correlationsMatrix, vmin=correlationYLims[0],
+                                      vmax=correlationYLims[1])
+                heatmapx.set_xticks(xTicks, list(correlationsTimebase[xTicks[0:-1]]) + [2.0])
+                heatmapx.set_title('X')
+                yTicks = []
+                for ii in range(len(targetRadii)):
+                    nTrials = len(correlogramTrials['Contrast' + str(cc)][rr][comparison])
+
+                    yValue = (ii + 1) * nTrials
+                    ax1.plot(np.array(range(len(correlationsTimebase))),
+                             np.ones(len(correlationsTimebase)) * yValue,
+                             color='black')
+                    yTicks.append((ii * nTrials) + nTrials / 2)
+                heatmapx.set_ylabel('Target Size (degrees)')
+                heatmapx.set_xlabel('Time (s)')
+
+                heatmapx.set_yticks(yTicks, np.array(targetRadii) * 2.0)
+                plt.savefig(savePath + 'C' + str(cc) + '_trialCorrelograms.png')
+                plt.close()
 
         results = {
             'peaks': peaks,
@@ -279,7 +312,12 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
         with open(savePath + 'C' + contrastsString + '_S' + sizesString + '_results.pkl', 'wb') as f:
             pickle.dump(results, f)
         f.close()
+
+
     else:
+
+
+
         contrastsString = ",".join(str(x) for x in contrasts)
         sizesString = ",".join(str(x) for x in targetRadii)
         with open(savePath + 'C' + contrastsString + '_S' + sizesString + '_results.pkl', 'rb') as f:

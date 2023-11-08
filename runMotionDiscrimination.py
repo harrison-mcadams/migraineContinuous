@@ -364,6 +364,9 @@ def runMotionDiscrimination(mywin, trialParams):
             pooledTargets[randomIndex].fieldPos = [xPosition[ii], yPosition[ii]]
             pooledTargets[randomIndex].draw()
 
+
+            targetCenter.pos = [xPosition[ii], yPosition[ii]]
+            targetCenter.draw()
         # Update the mouse pointer
 
 

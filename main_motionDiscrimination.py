@@ -2,8 +2,8 @@ import runMotionDiscrimination, os, datetime, getExperimentParams, random
 import numpy as np
 from psychopy import logging, clock, visual
 
-subjectID = 'horizontalPilot_S1.25-20_2'
-fullScreen = True
+subjectID = 'testyTest'
+fullScreen = False
 useMetropsis = False
 viewingDistance = 50
 randomizeTrialOrder = True
@@ -25,7 +25,9 @@ trialParams.update({'backgroundContrast': 50})
 #trialParams.update({'targetRadii_degrees': np.array([1.33, 2.33, 4, 7, 12])*0.5}) # Tadin + 12degrees
 trialParams.update({'targetRadii_degrees': [1,2,4,8,16]}) # Tadin + 12degrees
 trialParams.update({'targetRadii_degrees': [0.75, 1.5, 3, 6, 12]}) # Tadin + 12degrees
-trialParams.update({'targetRadii_degrees': [0.625, 1.25, 2.5, 5.0, 10.0]}) # Tadin + 12degrees
+trialParams.update({'targetRadii_degrees': [0.625, 1.25, 2.5, 5.0, 10.0]})
+trialParams.update({'targetRadii_degrees': [6]})
+
 
 
 

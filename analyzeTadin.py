@@ -1,12 +1,12 @@
 import numpy as np
 
-subjectID = 'horizontalPilot_S1.25-20_combined'
+#subjectID = 'horizontalPilot_S1.25-20_combined'
 #inputtedContrasts = [2, 99]
 #inputtedTargetRadii = np.array([1.33, 2.33, 4, 7, 12])*0.5
-load = False
-inputtedContrasts = []
-inputtedTargetRadii = []
-comparison = 'targetXVelocities-mouseXVelocities'
+#load = False
+#inputtedContrasts = []
+#inputtedTargetRadii = []
+#comparison = 'targetXVelocities-mouseXVelocities'
 
 def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load):
 
@@ -332,4 +332,4 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
 
     return peaks, contrasts, targetRadii
 
-analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load)
+#analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load)

@@ -2,11 +2,12 @@ import runMotionDiscrimination, os, datetime, getExperimentParams, random
 import numpy as np
 from psychopy import logging, clock, visual
 
-subjectID = 'testyTest'
-fullScreen = False
-useMetropsis = False
+subjectID = 'harry_carlynSizes'
+fullScreen = True
+useMetropsis = True
 viewingDistance = 50
 randomizeTrialOrder = True
+targetRadii_degrees = [0.75, 1.5, 3, 6]
 
 #option = 1 # jittering background of dots with stationary, smoothed target
 #option = 2 # gray background, with stationary, smoothed target
@@ -23,10 +24,11 @@ trialParams = getExperimentParams.getExperimentParams('tadin2019Continuous')
 trialParams.update({'contrasts': [2, 99]})
 trialParams.update({'backgroundContrast': 50})
 #trialParams.update({'targetRadii_degrees': np.array([1.33, 2.33, 4, 7, 12])*0.5}) # Tadin + 12degrees
-trialParams.update({'targetRadii_degrees': [1,2,4,8,16]}) # Tadin + 12degrees
-trialParams.update({'targetRadii_degrees': [0.75, 1.5, 3, 6, 12]}) # Tadin + 12degrees
-trialParams.update({'targetRadii_degrees': [0.625, 1.25, 2.5, 5.0, 10.0]})
-trialParams.update({'targetRadii_degrees': [6]})
+#trialParams.update({'targetRadii_degrees': [1,2,4,8,16]}) # Tadin + 12degrees
+#trialParams.update({'targetRadii_degrees': [0.75, 1.5, 3, 6, 12]}) # Tadin + 12degrees
+#trialParams.update({'targetRadii_degrees': [0.625, 1.25, 2.5, 5.0, 10.0]})
+#trialParams.update({'targetRadii_degrees': [6]})
+trialParams.update({'targetRadii_degrees': targetRadii_degrees})
 
 
 

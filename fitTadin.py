@@ -1,3 +1,4 @@
+
 import numpy as np
 import analyzeTadin
 
@@ -36,6 +37,9 @@ peaks, contrasts, targetRadii = analyzeTadin.analyzeTadin(subjectID, contrasts, 
 #                  0.12698832336642718, 0.12698832336642718, 0.12698832336642718, 0.12698832336642718,
 #                  0.15314555810206895, 0.15314555810206895, 0.15314555810206895, 0.15314555810206895,
 #                  0.18447519902923457, 0.18447519902923457, 0.18447519902923457, 0.18447519902923457])
+
+peaks, contrasts, targetRadii = analyzeTadin.analyzeTadin('tadinReplication')
+
 def fitTadin(sizes, peaks, contrasts):
 
     from scipy import special
@@ -108,14 +112,14 @@ def fitTadin(sizes, peaks, contrasts):
     popt, pcov = curve_fit(spatialSuppressionMechanisticModel, (sizes_repackaged,contrasts_repackaged), peaks_vector, p0=p0, maxfev=10000, bounds=(lowerLims, upperLims))
 
 
-    predictionSizes = np.array(range(int(sizes[-1])*1000))/1000
+    predictionSizes = np.array(range(int(np.ceil(sizes[-1]*1000))))/1000
     y_pred = spatialSuppressionMechanisticModel((predictionSizes,contrasts), *popt)
     y_pred = y_pred.reshape(len(predictionSizes), len(contrasts))
 
     counter = 0
     for contrast in contrasts:
-        plt.plot(np.log(predictionSizes), y_pred[:,counter])
-        plt.plot(np.log(sizes), peaks['Contrast'+str(contrast)])
+        plt.plot(np.log(predictionSizes), y_pred[:,counter], color='red')
+        plt.plot(np.log(sizes), peaks['Contrast'+str(contrast)], label=str(contrast)+'%')
         counter = counter+1
 
 
@@ -124,8 +128,11 @@ def fitTadin(sizes, peaks, contrasts):
     plt.xlim([np.log(0.25), np.log(10)])
     plt.ylim([0, 0.30])
     plt.xticks(np.log(sizes), sizes)
+    plt.legend()
 
     print('yikes')
 
-
+sizes = targetRadii
 fitTadin(sizes, peaks, contrasts)
+
+print('end')

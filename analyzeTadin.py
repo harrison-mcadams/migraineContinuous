@@ -1,12 +1,12 @@
 import numpy as np
 
-#subjectID = 'horizontalPilot_S1.25-20_combined'
+subjectID = 'harry_carlynSizes'
 #inputtedContrasts = [2, 99]
 #inputtedTargetRadii = np.array([1.33, 2.33, 4, 7, 12])*0.5
-#load = False
-#inputtedContrasts = []
-#inputtedTargetRadii = []
-#comparison = 'targetXVelocities-mouseXVelocities'
+load = False
+inputtedContrasts = []
+inputtedTargetRadii = []
+comparison = 'targetXVelocities-mouseXVelocities'
 
 def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load):
 
@@ -46,8 +46,8 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
     contrasts = list(set(contrasts))
     targetRadii = list(set(targetRadii))
 
-    contrasts = np.array(np.sort(contrasts))
-    targetRadii = np.array(np.sort(targetRadii))
+    contrasts = (sorted(contrasts))
+    targetRadii = (sorted(targetRadii))
 
     trialParams = trialData['trialParams']
     trialParams.update({'experimentName': experimentName})
@@ -156,9 +156,9 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
             widthErrors.update({'Contrast'+str(contrasts[cc]): SEMPooledWidths})
             lagErrors.update({'Contrast'+str(contrasts[cc]): SEMPooledLags})
 
-
+        targetRadii = np.array(targetRadii)
         for cc in contrasts:
-            plt.errorbar(np.log(targetRadii*2), peaks['Contrast'+str(cc)], peakErrors['Contrast'+str(cc)], label='Contrast: '+str(cc))
+            plt.errorbar(np.log(np.array(targetRadii)*2), peaks['Contrast'+str(cc)], peakErrors['Contrast'+str(cc)], label='Contrast: '+str(cc))
         #plt.errorbar(np.log(targetRadii*2), peaks['Contrast'+str(contrasts[1])], peakErrors['Contrast'+str(contrasts[1])], label='Contrast: '+str(contrasts[1]))
         plt.xticks(np.log(targetRadii*2), targetRadii*2)
         plt.xlabel('Stimulus Size (degrees)')
@@ -332,4 +332,4 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
 
     return peaks, contrasts, targetRadii
 
-#analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load)
+analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load)

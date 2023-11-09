@@ -64,7 +64,7 @@ def runMotionDiscrimination(mywin, trialParams):
     walkFrames = int(np.ceil(1 / walkRefreshRate * trialLength_s))+100
     arcminsPerPixel = 2.6/2
     mean = 0
-    std = 4 # gives speed of 6.6 degrees per second approximately, to match what Tadin did. Note that the original continuous paper from Johannes had this at 1
+    std = 2.5 # gives speed of 6.6 degrees per second approximately, to match what Tadin did. Note that the original continuous paper from Johannes had this at 1
     xVelocity = np.random.normal(mean, std, size=walkFrames)
     yVelocity = np.random.normal(mean, std, size=walkFrames)
     speed_pixelsPerFrame = (xVelocity**2 + yVelocity**2)**0.5

@@ -9,7 +9,7 @@ def runBlock(**kwargs):
         trialParams = kwargs['trialParams']
 
     else: # No trialParams specified, so will gather everything from scratch
-        trialParams = getExperimentParams.getExperimentParams('tadin2019Continuous')
+        trialParams = getExperimentParams.getExperimentParams('horizontalContinuous')
 
         subjectID, viewingDistance_cm = getSubjectInfo.getSubjectInfo()
         trialParams.update({'subjectID': subjectID})
@@ -18,7 +18,7 @@ def runBlock(**kwargs):
     paramsAcrossTrials = getTrialList.getTrialList(trialParams)
 
 
-    mywin, screenSize, fullScreen, screenNumber, screenDiagonal_cm, units  = getWindow.getWindow(useFullScreen=False)
+    mywin, screenSize, fullScreen, screenNumber, screenDiagonal_cm, units  = getWindow.getWindow()
     trialParams.update({'screenSize': screenSize})
     trialParams.update({'fullScreen': fullScreen})
     trialParams.update({'screenNumber': screenNumber})

@@ -29,6 +29,7 @@ def getExperimentParams(experimentName):
         trialParams.update({'targetRadii_degrees': [0.75, 1.5, 3, 6]})
         trialParams.update({'contrasts': [2, 99]})
         trialParams.update({'sf_cyclesPerDegree': 1})
+        trialParams.update({'targetSpeed_degreesPerSecond': 4})
 
 
     return trialParams

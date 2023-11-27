@@ -24,6 +24,8 @@ def runDemo(**kwargs):
     trialParams.update({'screenDiagonal_cm': screenDiagonal_cm})
     trialParams.update({'units': units})
 
+    subjectID = trialParams['subjectID']
+
     contrast = float(input('Contrast: '))
     targetRadius = float(input('Target radius: '))
 
@@ -56,5 +58,5 @@ def runDemo(**kwargs):
 
 
     mywin.close()
-    test = 'lame'
+    trialParams.update({'subjectID': subjectID})
 

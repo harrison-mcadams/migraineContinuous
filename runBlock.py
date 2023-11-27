@@ -36,7 +36,7 @@ def runBlock(**kwargs):
         })
 
         print('Trial ' + str(trialParams['trialNumber']) + ' of ' + str(
-            trialParams['totalTrials']) + '; Contrast: ' + str(trialParams['contrast']) + ', Size: ' + str(
+            trialParams['totalTrials']) + '; Contrast: ' + str(trialParams['contrast']) + ', Radius: ' + str(
             trialParams['targetRadius_degrees']))
 
         mywin.mouseVisible = True

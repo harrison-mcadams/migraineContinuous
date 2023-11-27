@@ -1,7 +1,7 @@
 from psychopy import logging, clock, visual
 import getExperimentParams, getSubjectInfo, getWindow, runBlock, runDemo
 
-trialParams = getExperimentParams.getExperimentParams('tadin2019Continuous')
+trialParams = getExperimentParams.getExperimentParams('horizontalContinuous')
 
 subjectID, viewingDistance_cm = getSubjectInfo.getSubjectInfo()
 trialParams.update({'subjectID': subjectID})

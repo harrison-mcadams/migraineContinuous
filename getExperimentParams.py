@@ -4,7 +4,7 @@ def getExperimentParams(experimentName):
     import numpy as np
 
     basePath = os.path.expanduser('~') + '/Desktop/'
-    projectName = 'headacheContinuous/'
+    projectName = 'surroundSuppressionHA/'
     dataPath = basePath + projectName + 'data/'
     analysisPath = basePath + projectName + 'analysis/'
 

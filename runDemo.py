@@ -26,8 +26,8 @@ def runDemo(**kwargs):
 
     subjectID = trialParams['subjectID']
 
-    contrast = float(input('Contrast: '))
-    targetRadius = float(input('Target radius: '))
+    contrast = float(input('Contrast ('+str(trialParams['contrasts'])+'): '))
+    targetRadius = float(input('Radius ('+str(trialParams['targetRadii_degrees'])+'): '))
 
     continueDemo = True
     trialCounter = 1
@@ -49,8 +49,8 @@ def runDemo(**kwargs):
         continueDemoQuestion = input('Continue demo? (y/n): ')
         if continueDemoQuestion == 'y':
             continueDemo = True
-            contrast = float(input('Contrast: '))
-            targetRadius = float(input('Target radius: '))
+            contrast = float(input('Contrast (' + str(trialParams['contrasts']) + '): '))
+            targetRadius = float(input('Radius (' + str(trialParams['targetRadii_degrees']) + '): '))
         else:
             continueDemo = False
 

@@ -42,17 +42,37 @@ def runTrial(mywin, trialParams):
     circleRadius_degrees = trialParams['targetRadius_degrees']
     centerRadius_degrees = trialParams['centerRadius_degrees']
     sf_cyclesPerDegree = trialParams['sf_cyclesPerDegree']
+    targetSpeed_degreesPerSecond = trialParams['targetSpeed_degreesPerSecond']
 
+    ## Convert distances from degrees to pixels, through centimeters
 
+    screenWidth_cm = screenDiagonal_cm / (((screenSize[1] ** 2) / (screenSize[0] ** 2)) + 1) ** 0.5
+    pixelsPerCM = screenSize[0] / screenWidth_cm
 
+    def convertDegreesToCM(degrees, viewingDistance_cm):
+        cms = 2 * viewingDistance_cm * np.tan(np.deg2rad(degrees / 2))
 
+        return cms
+
+    circleRadius_cm = convertDegreesToCM(circleRadius_degrees, viewingDistance_cm)
+    centerRadius_cm = convertDegreesToCM(centerRadius_degrees, viewingDistance_cm)
+
+    circleRadius_pixels = round(circleRadius_cm * pixelsPerCM)
+    centerRadius_pixels = round(centerRadius_cm * pixelsPerCM)
+
+    CMsPerDegree = convertDegreesToCM(1, viewingDistance_cm)
+    pixelsPerDegree = pixelsPerCM * CMsPerDegree
+    degreesPerPixel = 1/pixelsPerDegree
+    arcminsPerPixel = degreesPerPixel*60
+    sf_cyclesPerCM = sf_cyclesPerDegree / CMsPerDegree
+    sf_cyclesPerPixel = sf_cyclesPerCM / pixelsPerCM
 
     ## Prepare the random walk
     walkRefreshRate = 1/60
     walkFrames = int(np.ceil(1 / walkRefreshRate * trialLength_s))+100
-    arcminsPerPixel = 2.6/2
+    #arcminsPerPixel = 2.6/2
     mean = 0
-    std = 3.85 # gives speed of 4 degrees per second approximately
+    std = (targetSpeed_degreesPerSecond*pixelsPerDegree*walkRefreshRate)/((2/np.pi)**0.5) #3.85 # gives speed of 4 degrees per second approximately
     xVelocity = np.random.normal(mean, std, size=walkFrames)
     speed_pixelsPerFrame = (xVelocity**2)**0.5
     speed_pixelsPerSecond = speed_pixelsPerFrame*frameRate
@@ -76,27 +96,6 @@ def runTrial(mywin, trialParams):
         targetPositions.append([xPosition[ii], yPosition[ii]])
 
 
-
-    ## Convert distances from degrees to pixels, through centimeters
-    
-    screenWidth_cm = screenDiagonal_cm/(((screenSize[1]**2)/(screenSize[0]**2))+1)**0.5
-    pixelsPerCM = screenSize[0]/screenWidth_cm
-
-
-    def convertDegreesToCM(degrees, viewingDistance_cm):
-        cms = 2 * viewingDistance_cm * np.tan(np.deg2rad(degrees / 2))
-
-        return cms
-
-    circleRadius_cm = convertDegreesToCM(circleRadius_degrees, viewingDistance_cm)
-    centerRadius_cm = convertDegreesToCM(centerRadius_degrees, viewingDistance_cm)
-
-    circleRadius_pixels = round(circleRadius_cm * pixelsPerCM)
-    centerRadius_pixels = round(centerRadius_cm * pixelsPerCM)
-
-    CMsPerDegree = convertDegreesToCM(1, viewingDistance_cm)
-    sf_cyclesPerCM = sf_cyclesPerDegree / CMsPerDegree
-    sf_cyclesPerPixel = sf_cyclesPerCM / pixelsPerCM
 
 
 

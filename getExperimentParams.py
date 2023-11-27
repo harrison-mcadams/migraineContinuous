@@ -97,12 +97,9 @@ def getExperimentParams(experimentName):
         })
 
     if experimentName == 'tadin2019Continuous':
-        trialParams.update({'targetRadii_degrees': np.array([0.75, 1.33, 2.33, 4, 7])*0.5})
         trialParams.update({'dotSize_degrees': 4 / 60})
-        trialParams.update({'contrasts': [7, 99]})
         trialParams.update({'randomizeTarget': False})
         trialParams.update({'backgroundMethod': 'gray'})
-        trialParams.update({'units': 'pix'})
         trialParams.update({'trialLength_s': 20})
         trialParams.update({'trialRepeats': 3})
         trialParams.update({'targetOpacity': 1})
@@ -119,6 +116,11 @@ def getExperimentParams(experimentName):
         trialParams.update({'circleFWHM_degrees': 7/2})
         trialParams.update({'fringeWidth': 0.9})
         trialParams.update({'centerRadius_degrees': 0.1})
-        trialParams.update({'1DMotion': False})
+        trialParams.update({'targetRadii_degrees': [0.75, 1.5, 3, 6]})
+        trialParams.update({'contrasts': [2, 99]})
+        trialParams.update({'backgroundContrast': 0})
+        trialParams.update({'targetMethod': 'GratingStim'})
+        trialParams.update({'1DMotion': True})
+
 
     return trialParams

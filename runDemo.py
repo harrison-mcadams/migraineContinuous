@@ -2,6 +2,7 @@ def runDemo(**kwargs):
 
     from psychopy import logging, clock, visual
     import getExperimentParams, getSubjectInfo, getWindow, getTrialList, runTrial
+    import pyautogui
 
 
     if 'trialParams' in kwargs:
@@ -16,8 +17,17 @@ def runDemo(**kwargs):
         trialParams.update({'viewingDistance_cm': viewingDistance_cm})
 
 
+    # Working on mouse behavior
+    # Get the screen size
+    screen_width, screen_height = pyautogui.size()
 
-    mywin, screenSize, fullScreen, screenNumber, screenDiagonal_cm, units  = getWindow.getWindow(useFullScreen=False)
+    # Calculate the center coordinates
+    center_x = screen_width // 2
+    center_y = screen_height // 2
+
+
+
+    mywin, screenSize, fullScreen, screenNumber, screenDiagonal_cm, units  = getWindow.getWindow()
     trialParams.update({'screenSize': screenSize})
     trialParams.update({'fullScreen': fullScreen})
     trialParams.update({'screenNumber': screenNumber})
@@ -26,8 +36,8 @@ def runDemo(**kwargs):
 
     subjectID = trialParams['subjectID']
 
-    contrast = float(input('Contrast ('+str(trialParams['contrasts'])+'): '))
-    targetRadius = float(input('Radius ('+str(trialParams['targetRadii_degrees'])+'): '))
+    contrast = 99
+    targetRadius = 6
 
     continueDemo = True
     trialCounter = 1
@@ -45,6 +55,8 @@ def runDemo(**kwargs):
         mywin.mouseVisible = True
 
         runTrial.runTrial(mywin, trialParams)
+
+        pyautogui.moveTo(center_x, center_y)
 
         continueDemoQuestion = input('Continue demo? (y/n): ')
         if continueDemoQuestion == 'y':

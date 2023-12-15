@@ -58,11 +58,43 @@ def runDemo(**kwargs):
 
         pyautogui.moveTo(center_x, center_y)
 
-        continueDemoQuestion = input('Continue demo? (y/n): ')
+        continueDemoQuestion = ''
+        while continueDemoQuestion != 'y' and continueDemoQuestion != 'n':
+
+            continueDemoQuestion = input('Continue demo? (y/n): ')
+            if continueDemoQuestion != 'y' and continueDemoQuestion != 'n':
+                print('Please enter y or n')
+
+
         if continueDemoQuestion == 'y':
             continueDemo = True
-            contrast = float(input('Contrast (' + str(trialParams['contrasts']) + '): '))
-            targetRadius = float(input('Radius (' + str(trialParams['targetRadii_degrees']) + '): '))
+
+            contrast = 0
+            while contrast not in trialParams['contrasts']:
+
+                contrast = input('Contrast (' + str(trialParams['contrasts']) + '): ')
+                try:
+                    if float(contrast) not in trialParams['contrasts']:
+                        print('Please enter a valid contrast from available options')
+                    contrast = float(contrast)
+                except:
+                    print('Please enter a valid contrast from available options')
+
+
+
+            targetRadius = 0
+            while targetRadius not in trialParams['targetRadii_degrees']:
+
+                targetRadius = input('Radius (' + str(trialParams['targetRadii_degrees']) + '): ')
+
+                try:
+
+                    if float(targetRadius) not in trialParams['targetRadii_degrees']:
+                        print('Please enter a valid target radius from available options')
+                    targetRadius = float(targetRadius)
+
+                except:
+                    print('Please enter a valid target radius from available options')
         else:
             continueDemo = False
 

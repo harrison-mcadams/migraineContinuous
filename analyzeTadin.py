@@ -1,7 +1,8 @@
 import numpy as np
 
-subjectID = 'harry_carlynSizes'
+subjectID = 'SS_1412'
 #inputtedContrasts = [2, 99]
+
 #inputtedTargetRadii = np.array([1.33, 2.33, 4, 7, 12])*0.5
 load = False
 inputtedContrasts = []
@@ -16,7 +17,7 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
     import seaborn as sb
 
     experimentName = 'tadin2019Continuous'
-    #experimentName = 'horizontalContinuous'
+    experimentName = 'horizontalContinuous'
 
     if inputtedContrasts == [] and inputtedTargetRadii == []:
         flexiblyDiscoverTrials = True

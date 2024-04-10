@@ -2,7 +2,7 @@ import runMotionDiscrimination, os, datetime, getExperimentParams, random
 import numpy as np
 from psychopy import logging, clock, visual
 
-subjectID = 'harry_carlynSizes'
+subjectID = 'carlyn_1'
 fullScreen = True
 useMetropsis = True
 viewingDistance = 50

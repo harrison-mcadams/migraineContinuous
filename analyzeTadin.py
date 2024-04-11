@@ -1,17 +1,18 @@
-import numpy as np
+#import numpy as np
 
-subjectID = 'SS_1412'
+#subjectID = 'SS_1412'
 #inputtedContrasts = [2, 99]
 
 #inputtedTargetRadii = np.array([1.33, 2.33, 4, 7, 12])*0.5
-load = False
-inputtedContrasts = []
-inputtedTargetRadii = []
-comparison = 'targetXVelocities-mouseXVelocities'
+#load = False
+#inputtedContrasts = []
+#inputtedTargetRadii = []
+#comparison = 'targetXVelocities-mouseXVelocities'
 
 def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load):
 
     import analyzeContinuous_new, getExperimentParams, glob, pickle
+    import os
     import matplotlib.pyplot as plt
     import numpy as np
     import seaborn as sb
@@ -53,7 +54,7 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
     trialParams = trialData['trialParams']
     trialParams.update({'experimentName': experimentName})
 
-    savePath = trialParams['analysisPath']+trialParams['experimentName']+'/'+subjectID+'/'
+    savePath = basicTrialParams['analysisPath']+trialParams['experimentName']+'/'+subjectID+'/'
 
     correlationYLims = [-0.05, 0.3]
 
@@ -166,6 +167,11 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
         plt.ylabel('Kernel Peak (r)')
         plt.legend()
         plt.savefig(savePath + 'CRF_peaks.png')
+
+
+        if not os.path.exists(basicTrialParams['analysisPath'] + '/horizontalContinuous/pooled/'):
+            os.makedirs(basicTrialParams['analysisPath'] + '/horizontalContinuous/pooled/')
+        plt.savefig(basicTrialParams['analysisPath'] + '/horizontalContinuous/pooled/' + subjectID + '_CRF_peaks.png')
         plt.close()
 
         for cc in contrasts:
@@ -333,4 +339,4 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
 
     return peaks, contrasts, targetRadii
 
-analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load)
+#analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load)

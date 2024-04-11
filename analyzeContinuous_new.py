@@ -215,25 +215,40 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
         def func(x, lag, width, peak):
             return visual.filters.makeGauss(np.log(x), mean=np.log(lag), sd=np.log(width), gain=peak, base=0)
 
-        # Do the fit
-        popt, pcov = curve_fit(func, range(len(correlogram)), correlogram, p0=[indexOfMaxCorrelation, 1.1, maxCorrelation],
-                               bounds = ([time0, 0, -1], [len(correlogram), 2, 1]), maxfev=100000)
-                            #p0=[shift, 0.4, maxCorrelation])
-                               #bounds=([0, 0, -1], [2, 0.5, 1]))
-        lag = correlationTimebase[0] + popt[0]*(correlationTimebase[1]-correlationTimebase[0])
-        width_sigma = popt[1]
-        width_fwhm = width_sigma * ((8 * np.log(2)) ** 0.5)
-        peak = popt[2]
-        peak_rounded = round(peak, 3)
-        width_fwhm_rounded = round(width_fwhm, 3)
-        lag_rounded = round(lag, 3)
+        if np.sum(np.isnan(correlogram)) == len(correlogram):
+            peak = np.nan
+            lag = np.nan
+            width_fwhm = np.nan
+            r2 = np.nan
 
-        y_pred = func(range(len(correlogram)), *popt)
+            peak_rounded = np.nan
+            lag_rounded = np.nan
+            width_fwhm_rounded = np.nan
+            r2_rounded = np.nan
 
-        SSres = sum((np.array(correlogram) - np.array(y_pred)) ** 2)
-        SStot = sum((np.array(correlogram) - np.mean(correlogram)) ** 2)
-        r2 = 1 - SSres / SStot
-        r2_rounded = round(r2, 3)
+            y_pred = correlogram
+
+        else:
+
+            # Do the fit
+            popt, pcov = curve_fit(func, range(len(correlogram)), correlogram, p0=[indexOfMaxCorrelation, 1.1, maxCorrelation],
+                                   bounds = ([time0, 0, -1], [len(correlogram), 2, 1]), maxfev=100000)
+                                #p0=[shift, 0.4, maxCorrelation])
+                                   #bounds=([0, 0, -1], [2, 0.5, 1]))
+            lag = correlationTimebase[0] + popt[0]*(correlationTimebase[1]-correlationTimebase[0])
+            width_sigma = popt[1]
+            width_fwhm = width_sigma * ((8 * np.log(2)) ** 0.5)
+            peak = popt[2]
+            peak_rounded = round(peak, 3)
+            width_fwhm_rounded = round(width_fwhm, 3)
+            lag_rounded = round(lag, 3)
+
+            y_pred = func(range(len(correlogram)), *popt)
+
+            SSres = sum((np.array(correlogram) - np.array(y_pred)) ** 2)
+            SStot = sum((np.array(correlogram) - np.mean(correlogram)) ** 2)
+            r2 = 1 - SSres / SStot
+            r2_rounded = round(r2, 3)
 
         fitStats= {'peak': peak}
         fitStats.update({'lag': lag})

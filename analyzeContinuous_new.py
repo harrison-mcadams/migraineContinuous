@@ -11,23 +11,24 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
 
     ## Establish analysis parameters
     debugPlotting = False
-    savePathRoot = os.path.expanduser('~') + '/Desktop/migraineContinuous/analysis/'
+    savePathRoot = os.path.expanduser('~') + '/Desktop/surroundSuppressionPTHA/analysis/'
     savePath = savePathRoot + '/' + experimentName + '/' + subjectID + '/'
 
     trials = 'all'
 
     samplingRate = 1/1000
 
-    dataPath = os.path.expanduser('~') + '/Desktop/migraineContinuous/data/'
+    dataPath = os.path.expanduser('~') + '/Desktop/surroundSuppressionPTHA/data/'
 
     # Find the trials
 
-    if experimentName == 'tadin2019Continuous':
+    if experimentName == 'horizontalContinuous':
         relevantTrialFiles = glob.glob(dataPath + '/' + experimentName + '/' + subjectID + '/**/*S' + str(trialParams['targetRadius_degrees']) + '_C' + str(trialParams['contrast']) + '_raw.pkl', recursive=True)
         eventNames = ['mouseYVelocities', 'targetXVelocities', 'targetYVelocities', 'mouseXs', 'mouseYs', 'targetXs', 'targetYs', 'mouseXVelocities']
         eventTimeNames = ['frameTimes', 'frameTimes', 'frameTimes', 'frameTimes', 'frameTimes', 'frameTimes', 'frameTimes', 'frameTimes']
         trialParamsOfInterest = ['targetRadius_degrees', 'contrast']
         trialDescriptor = 'S'+str(trialParams['targetRadius_degrees'])+'_C'+str(trialParams['contrast'])
+        oneDMotion = True
     else:
         relevantTrialFiles = glob.glob(dataPath + '/' + experimentName + '/' + subjectID + '/**/*SF' + str(trialParams['spatialFrequency']) + '_C' + str(trialParams['gaborContrast']) + '_raw.pkl', recursive=True)
         eventNames = ['responseDirections', 'surroundDirections', 'stimulusDirections']
@@ -97,8 +98,8 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
 
 
     ## Perform the cross correlation
-    if trialParams['experimentName'] == 'tadin2019Continuous':
-        if trialParams['1DMotion']:
+    if trialParams['experimentName'] == 'tadin2019Continuous' or trialParams['experimentName'] == 'horizontalContinuous':
+        if oneDMotion:
             stimulusNames = ['targetXVelocities']
             responseNames = ['mouseXVelocities']
             combineXY = False
@@ -201,7 +202,10 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
     def fitGaussian(correlogram, correlationTimebase, stimulusName, responseName, saveSuffix):
         correlogram = list(correlogram)
         time0 = np.argmin(np.abs(np.array(correlationTimebase) - 0))
-        maxCorrelation = max(correlogram[time0:-1], key=abs)
+        #maxCorrelation = max(correlogram[time0:-1], key=abs)
+        maxCorrelation = max(correlogram[time0:-1])
+        maxCorrelation = max(correlogram[time0:time0+1000])
+
         maxCorrelationRounded = round(maxCorrelation, 3)
         indexOfMaxCorrelation = correlogram.index(maxCorrelation)
         shift = correlationTimebase[indexOfMaxCorrelation]
@@ -213,7 +217,7 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
 
         # Do the fit
         popt, pcov = curve_fit(func, range(len(correlogram)), correlogram, p0=[indexOfMaxCorrelation, 1.1, maxCorrelation],
-                               bounds = ([time0, 0, -1], [len(correlogram), 2, 1]))
+                               bounds = ([time0, 0, -1], [len(correlogram), 2, 1]), maxfev=100000)
                             #p0=[shift, 0.4, maxCorrelation])
                                #bounds=([0, 0, -1], [2, 0.5, 1]))
         lag = correlationTimebase[0] + popt[0]*(correlationTimebase[1]-correlationTimebase[0])

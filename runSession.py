@@ -13,8 +13,6 @@ runDemo.runDemo(trialParams=trialParams)
 ## Run first block
 runBlock.runBlock(trialParams=trialParams)
 
-## Pause between blocks
-input('Press Enter when ready to begin second block:')
 
 ## Run second block
 runBlock.runBlock(trialParams=trialParams)

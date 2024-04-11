@@ -1,10 +1,10 @@
-import runMotionDiscrimination, os, datetime, getExperimentParams_og, random
+import runMotionDiscrimination, os, datetime, getExperimentParams, random
 import numpy as np
 from psychopy import logging, clock, visual
 
-subjectID = 'debugging'
-fullScreen = False
-useMetropsis = False
+subjectID = 'carlyn_1'
+fullScreen = True
+useMetropsis = True
 viewingDistance = 50
 randomizeTrialOrder = True
 targetRadii_degrees = [0.75, 1.5, 3, 6]
@@ -18,7 +18,7 @@ option = 6 # horizontal motion
 
 ## depending on monitor, will need to figure out screen width, pixel size, etc.
 
-trialParams = getExperimentParams_og.getExperimentParams_og('tadin2019Continuous')
+trialParams = getExperimentParams.getExperimentParams('tadin2019Continuous')
 
 # main params
 trialParams.update({'contrasts': [2, 99]})

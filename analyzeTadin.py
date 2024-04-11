@@ -1,13 +1,5 @@
 import numpy as np
 
-subjectID = 'harry_carlynSizes'
-#inputtedContrasts = [2, 99]
-#inputtedTargetRadii = np.array([1.33, 2.33, 4, 7, 12])*0.5
-load = False
-inputtedContrasts = []
-inputtedTargetRadii = []
-comparison = 'targetXVelocities-mouseXVelocities'
-
 def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load):
 
     import analyzeContinuous_new, getExperimentParams, glob, pickle
@@ -52,7 +44,7 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
     trialParams = trialData['trialParams']
     trialParams.update({'experimentName': experimentName})
 
-    savePath = trialParams['analysisPath']+trialParams['experimentName']+'/'+subjectID+'/'
+    savePath = '/Users/harrisonmcadams/Desktop/migraineContinuous/analysis/'+trialParams['experimentName']+'/'+subjectID+'/'
 
     correlationYLims = [-0.05, 0.3]
 
@@ -298,6 +290,7 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
 
         results = {
             'peaks': peaks,
+            'peaksTrials': peaksTrials,
             'peakErrors': peakErrors,
             'widths': widths,
             'widthErrors': widthErrors,
@@ -319,17 +312,17 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
 
 
         contrastsString = ",".join(str(x) for x in contrasts)
-        sizesString = ",".join(str(x) for x in targetRadii)
+        sizesString = ",".join(str(x) for x in np.array(targetRadii))
         with open(savePath + 'C' + contrastsString + '_S' + sizesString + '_results.pkl', 'rb') as f:
             results = pickle.load(f)
 
         contrasts = results['contrasts']
         peaks = results['peaks']
+        peaksTrials = results['peaksTrials']
         targetRadii = results['targetRadii']
 
 
     print('oogie')
 
-    return peaks, contrasts, targetRadii
+    return peaks, peaksTrials, contrasts, targetRadii
 
-analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load)

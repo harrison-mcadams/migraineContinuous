@@ -26,8 +26,8 @@ def runDemo(**kwargs):
 
     subjectID = trialParams['subjectID']
 
-    contrast = float(input('Contrast ('+str(trialParams['contrasts'])+'): '))
-    targetRadius = float(input('Radius ('+str(trialParams['targetRadii_degrees'])+'): '))
+    contrast = 99 # float(input('Contrast ('+str(trialParams['contrasts'])+'): '))
+    targetRadius = 6 # float(input('Radius ('+str(trialParams['targetRadii_degrees'])+'): '))
 
     continueDemo = True
     trialCounter = 1

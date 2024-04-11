@@ -75,7 +75,7 @@ def runTrial(mywin, trialParams):
     std = (targetSpeed_degreesPerSecond*pixelsPerDegree*walkRefreshRate)/((2/np.pi)**0.5) #3.85 # gives speed of 4 degrees per second approximately
     xVelocity = np.random.normal(mean, std, size=walkFrames)
     speed_pixelsPerFrame = (xVelocity**2)**0.5
-    speed_pixelsPerSecond = speed_pixelsPerFrame*frameRate
+    speed_pixelsPerSecond = speed_pixelsPerFrame*1/walkRefreshRate
     speed_arcminPerSecond = speed_pixelsPerSecond * arcminsPerPixel
     speed_degreePerSecond = speed_arcminPerSecond /60
    # print(np.mean(speed_degreePerSecond))

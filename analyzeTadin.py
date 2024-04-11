@@ -166,6 +166,7 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
         plt.xlabel('Stimulus Size (degrees)')
         plt.ylabel('Kernel Peak (r)')
         plt.legend()
+        plt.ylim([-0.025, 0.25])
         plt.savefig(savePath + 'CRF_peaks.png')
 
 

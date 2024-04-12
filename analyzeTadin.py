@@ -54,7 +54,7 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
     trialParams = trialData['trialParams']
     trialParams.update({'experimentName': experimentName})
 
-    savePath = basicTrialParams['analysisPath']+trialParams['experimentName']+'/'+subjectID+'/'
+    savePath = basicTrialParams['analysisPath']+trialParams['experimentName']+'/meanResponses/'+subjectID+'/'
 
     correlationYLims = [-0.05, 0.3]
 

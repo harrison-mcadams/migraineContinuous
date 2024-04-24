@@ -44,112 +44,143 @@ def makeGroupResponse(loadBehavior):
 
         groups = ['controls', 'migraine', 'ptha']
         groupsCounter = 1
+
+        # Big nested for loop structure to set up our results variables
         for group in groups:
 
             if groupsCounter == 1:
                 pooledCorrelograms = {group: []}
+                pooledPeaks = {group: []}
+                meanCorrelograms = {group: []}
+                meanPeaks = {group: []}
+                SEMCorrelograms = {group: []}
+                SEMPeaks = {group: []}
             else:
                 pooledCorrelograms.update({group: []})
+                pooledPeaks.update({group: []})
+                meanCorrelograms.update({group: []})
+                meanPeaks.update({group: []})
+                SEMCorrelograms.update({group: []})
+                SEMPeaks.update({group: []})
             groupsCounter = groupsCounter + 1
 
             contrastCounter = 1
             for contrast in inputtedContrasts:
                 if contrastCounter == 1:
                     pooledCorrelograms[group] = {'Contrast' + str(contrast): []}
+                    pooledPeaks[group] = {'Contrast' + str(contrast): []}
+                    meanCorrelograms[group] = {'Contrast' + str(contrast): []}
+                    meanPeaks[group] = {'Contrast' + str(contrast): []}
+                    SEMCorrelograms[group] = {'Contrast' + str(contrast): []}
+                    SEMPeaks[group] = {'Contrast' + str(contrast): []}
                 else:
                     pooledCorrelograms[group].update({'Contrast' + str(contrast): []})
+                    pooledPeaks[group].update({'Contrast' + str(contrast): []})
+                    meanCorrelograms[group].update({'Contrast' + str(contrast): []})
+                    meanPeaks[group].update({'Contrast' + str(contrast): []})
+                    SEMCorrelograms[group].update({'Contrast' + str(contrast): []})
+                    SEMPeaks[group].update({'Contrast' + str(contrast): []})
                 contrastCounter = contrastCounter + 1
 
-                sizeCounter = 1
-                for size in inputtedTargetRadii:
-                    if sizeCounter == 1:
-                        pooledCorrelograms[group]['Contrast'+str(contrast)] =  {'Size'+str(size): []}
+                radiusCounter = 1
+                for radius in inputtedTargetRadii:
+                    if radiusCounter == 1:
+                        pooledCorrelograms[group]['Contrast'+str(contrast)] =  {'Radius'+str(radius): []}
+                        pooledPeaks[group]['Contrast'+str(contrast)] =  {'Radius'+str(radius): []}
+                        meanCorrelograms[group]['Contrast'+str(contrast)] =  {'Radius'+str(radius): []}
+                        meanPeaks[group]['Contrast'+str(contrast)] =  {'Radius'+str(radius): []}
+                        SEMCorrelograms[group]['Contrast'+str(contrast)] =  {'Radius'+str(radius): []}
+                        SEMPeaks[group]['Contrast'+str(contrast)] =  {'Radius'+str(radius): []}
+
+
                     else:
-                        pooledCorrelograms[group]['Contrast'+str(contrast)].update({'Size'+str(size): []})
-                    sizeCounter = sizeCounter + 1
+                        pooledCorrelograms[group]['Contrast'+str(contrast)].update({'Radius'+str(radius): []})
+                        pooledPeaks[group]['Contrast'+str(contrast)].update({'Radius'+str(radius): []})
+                        meanCorrelograms[group]['Contrast'+str(contrast)].update({'Radius'+str(radius): []})
+                        meanPeaks[group]['Contrast'+str(contrast)].update({'Radius'+str(radius): []})
+                        SEMCorrelograms[group]['Contrast'+str(contrast)].update({'Radius'+str(radius): []})
+                        SEMPeaks[group]['Contrast'+str(contrast)].update({'Radius'+str(radius): []})
+
+                    radiusCounter = radiusCounter + 1
+
+        ## Do the pooling
+        for group in groups:
 
 
-        for subjectIDc in subjectIDs['controls']:
-            group = 'controls'
+            for subjectID in subjectIDs[group]:
 
-            peaks, contrasts, targetRadii, correlograms = analyzeTadin.analyzeTadin(subjectIDc, inputtedContrasts, inputtedTargetRadii, comparison, True)
+                peaks, contrasts, targetRadii, correlograms = analyzeTadin.analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, True)
 
-            peaks_2.append(peaks['Contrast2'])
-            peaks_99.append(peaks['Contrast99'])
+                peaks_2.append(peaks['Contrast2'])
+                peaks_99.append(peaks['Contrast99'])
 
+                for contrast in inputtedContrasts:
+                    radiusCounter = 0
+                    for radius in inputtedTargetRadii:
+                        pooledCorrelograms[group]['Contrast'+str(contrast)]['Radius'+str(radius)].append(correlograms['Contrast'+str(contrast)][radiusCounter])
+                        pooledPeaks[group]['Contrast'+str(contrast)]['Radius'+str(radius)].append(peaks['Contrast'+str(contrast)][radiusCounter])
+
+                        radiusCounter = radiusCounter + 1
+
+        ## Collapse pooling into mean and SEM
+        for group in groups:
             for contrast in inputtedContrasts:
-                sizeCounter = 0
-                for size in inputtedTargetRadii:
-                    pooledCorrelograms[group]['Contrast'+str(contrast)]['Size'+str(size)].append(correlograms['Contrast'+str(contrast)][sizeCounter])
-                    sizeCounter = sizeCounter + 1
-        controlMean_peaks_2 = np.mean(peaks_2, 0)
-        controlMean_peaks_99 = np.mean(peaks_99, 0)
+                radiusCounter = 0
+                for radius in inputtedTargetRadii:
+                    meanPeaks[group]['Contrast'+str(contrast)]['Radius'+str(radius)] = np.mean(pooledPeaks[group]['Contrast'+str(contrast)]['Radius'+str(radius)])
+                    SEMPeaks[group]['Contrast'+str(contrast)]['Radius'+str(radius)] = np.std(pooledPeaks[group]['Contrast'+str(contrast)]['Radius'+str(radius)])/(len(pooledPeaks[group]['Contrast'+str(contrast)]['Radius'+str(radius)])**0.5)
 
-        controlSEM_peaks_2 = np.std(peaks_2, 0)/len(peaks_2)**0.5
-        controlSEM_peaks_99 = np.std(peaks_99, 0)/len(peaks_99)**0.5
-
-        plt.errorbar(np.log(np.array(inputtedTargetRadii) * 2), controlMean_peaks_2, controlSEM_peaks_2,
-                    color='k', linestyle='--')
-        plt.errorbar(np.log(np.array(inputtedTargetRadii) * 2), controlMean_peaks_99, controlSEM_peaks_99,
-                     label='Controls', color='k', linestyle='-')
-
-        migrainePeaks_2 = []
-        migrainePeaks_99 = []
+                    meanCorrelograms[group]['Contrast'+str(contrast)]['Radius'+str(radius)] = np.mean(pooledCorrelograms[group]['Contrast'+str(contrast)]['Radius'+str(radius)],0)
+                    SEMCorrelograms[group]['Contrast'+str(contrast)]['Radius'+str(radius)] = np.std(pooledCorrelograms[group]['Contrast'+str(contrast)]['Radius'+str(radius)],0)/(np.size(pooledPeaks[group]['Contrast'+str(contrast)]['Radius'+str(radius)],0)**0.5)
 
 
-        for subjectIDm in subjectIDs['migraine']:
-            group = 'migraine'
+                radiusCounter = radiusCounter + 1
 
-            peaks, contrasts, targetRadii, correlograms = analyzeTadin.analyzeTadin(subjectIDm, inputtedContrasts, inputtedTargetRadii, comparison, True)
+        ## Do some plotting
 
-            migrainePeaks_2.append(peaks['Contrast2'])
-            migrainePeaks_99.append(peaks['Contrast99'])
+        groupColors = {'controls': 'black',
+                       'migraine': 'red',
+                       'ptha': 'blue'}
 
-            for contrast in inputtedContrasts:
-                sizeCounter = 0
-                for size in inputtedTargetRadii:
-                    pooledCorrelograms[group]['Contrast'+str(contrast)]['Size'+str(size)].append(correlograms['Contrast'+str(contrast)][sizeCounter])
-                    sizeCounter = sizeCounter + 1
+        contrastLineStyles = {'2': '--',
+                              '99': '-'}
 
-        migraineMean_peaks_2 = np.mean(migrainePeaks_2, 0)
-        migraineMean_peaks_99 = np.mean(migrainePeaks_99, 0)
+        # Plot peaks by size
+        groupCounter = 0
+        for group in groups:
+            for contrast in contrasts:
+                if contrast == 99:
+                    plt.errorbar(
+                        np.log(np.array(inputtedTargetRadii) * 2),
+                        [meanPeaks[group]['Contrast'+str(contrast)]['Radius'+str(inputtedTargetRadii[0])], meanPeaks[group]['Contrast'+str(contrast)]['Radius'+str(inputtedTargetRadii[1])], meanPeaks[group]['Contrast'+str(contrast)]['Radius'+str(inputtedTargetRadii[2])], meanPeaks[group]['Contrast'+str(contrast)]['Radius'+str(inputtedTargetRadii[3])]],
+                        [SEMPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[0])],
+                         SEMPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[1])],
+                         SEMPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[2])],
+                         SEMPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[3])]],
 
-        migraineSEM_peaks_2 = np.std(migrainePeaks_2, 0)/len(migrainePeaks_2)**0.5
-        migraineSEM_peaks_99 = np.std(migrainePeaks_99, 0)/len(migrainePeaks_2)**0.5
+                        color=groupColors[group],
+                        label=groups[groupCounter],
+                        linestyle=contrastLineStyles[str(contrast)]
+                    )
+                else:
+                    plt.errorbar(
+                        np.log(np.array(inputtedTargetRadii) * 2),
+                        [meanPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[0])],
+                         meanPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[1])],
+                         meanPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[2])],
+                         meanPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[3])]],
+                        [SEMPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[0])],
+                         SEMPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[1])],
+                         SEMPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[2])],
+                         SEMPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[3])]],
 
-        plt.errorbar(np.log(np.array(inputtedTargetRadii) * 2), migraineMean_peaks_2, migraineSEM_peaks_2,
-                    color='r', linestyle='--')
-        plt.errorbar(np.log(np.array(inputtedTargetRadii) * 2), migraineMean_peaks_99, migraineSEM_peaks_99,
-                     label='Migraine', color='r', linestyle='-')
+                        color=groupColors[group],
+                        linestyle=contrastLineStyles[str(contrast)]
+                    )
 
-        pthaPeaks_2 = []
-        pthaPeaks_99 = []
+            groupCounter = groupCounter + 1
 
-        for subjectIDp in subjectIDs['ptha']:
 
-            group = 'ptha'
-
-            peaks, contrasts, targetRadii, correlograms = analyzeTadin.analyzeTadin(subjectIDp, inputtedContrasts, inputtedTargetRadii, comparison, True)
-
-            pthaPeaks_2.append(peaks['Contrast2'])
-            pthaPeaks_99.append(peaks['Contrast99'])
-
-            for contrast in inputtedContrasts:
-                sizeCounter = 0
-                for size in inputtedTargetRadii:
-                    pooledCorrelograms[group]['Contrast'+str(contrast)]['Size'+str(size)].append(correlograms['Contrast'+str(contrast)][sizeCounter])
-                    sizeCounter = sizeCounter + 1
-
-        pthaMean_peaks_2 = np.mean(pthaPeaks_2, 0)
-        pthaMean_peaks_99 = np.mean(pthaPeaks_99, 0)
-
-        pthaSEM_peaks_2 = np.std(pthaPeaks_2, 0)/len(pthaPeaks_2)**0.5
-        pthaSEM_peaks_99 = np.std(pthaPeaks_99, 0)/len(pthaPeaks_99)**0.5
-
-        plt.errorbar(np.log(np.array(inputtedTargetRadii) * 2), pthaMean_peaks_2, pthaSEM_peaks_2,
-                    color='b', linestyle='--')
-        plt.errorbar(np.log(np.array(inputtedTargetRadii) * 2), pthaMean_peaks_99, pthaSEM_peaks_99,
-                     label='PTHA', color='b', linestyle='-')
 
 
         plt.xticks(np.log(targetRadii*2), targetRadii*2)
@@ -158,20 +189,47 @@ def makeGroupResponse(loadBehavior):
         plt.legend()
         plt.ylim([-0.025, 0.25])
         plt.savefig(savePath + 'groups_CRF_peaks.png')
+        plt.close()
 
 
-        pooledPeaks = {'Contrast2': groupMean_peaks_2}
-        pooledPeaks.update({'Contrast99': groupMean_peaks_99})
+        # Plot correlograms by stimulus condition
+        firstTimepoint = -1
+        lastTimepoint = 2
+        samplingRate = 1/1000
 
-        pooledPeaksSEM = {'Contrast2': groupSEM_peaks_2}
-        pooledPeaksSEM.update({'Contrast99': groupSEM_peaks_99})
+        correlationIndices = list(
+            range(round(firstTimepoint * 1 / samplingRate), round(lastTimepoint * 1 / samplingRate)))
+        correlationTimebase = np.array(correlationIndices) * samplingRate
+
+        groupCounter = 0
+
+        for contrast in contrasts:
+            for radius in inputtedTargetRadii:
+                for group in groups:
+                    plt.plot(correlationTimebase, meanCorrelograms[group]['Contrast'+str(contrast)]['Radius'+str(radius)],
+                             color=groupColors[group],
+                             label=group,
+                             )
+
+                plt.xlabel('Time (s)')
+                plt.ylabel('Cross Correlation')
+                plt.legend()
+                plt.ylim([-0.025, 0.25])
+                plt.savefig(savePath + 'C'+str(contrast)+'_S'+str(2*radius)+'_crossCorrelogram.png')
+                plt.close()
+
+                groupCounter = groupCounter + 1
+
 
         results = {
-                    'peaks': pooledPeaks,
-                    'peaksSEM': pooledPeaksSEM,
-                    'contrasts': contrasts,
-                    'targetRadii': targetRadii,
-                    'correlograms': pooledCorrelograms
+                    'pooledPeaks': pooledPeaks,
+                    'meanPeaks': meanPeaks,
+                    'SEMPeaks': SEMPeaks,
+
+                    'pooledCorrelograms': pooledCorrelograms,
+                    'meanCorrelograms': meanCorrelograms,
+                    'SEMCorrelograms': SEMCorrelograms
+
                 }
 
 

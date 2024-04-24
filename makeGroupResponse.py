@@ -72,7 +72,7 @@ def makeGroupResponse(loadBehavior):
         for subjectIDc in subjectIDs['controls']:
             group = 'controls'
 
-            peaks, contrasts, targetRadii, correlograms = analyzeTadin.analyzeTadin(subjectIDc, inputtedContrasts, inputtedTargetRadii, comparison, False)
+            peaks, contrasts, targetRadii, correlograms = analyzeTadin.analyzeTadin(subjectIDc, inputtedContrasts, inputtedTargetRadii, comparison, True)
 
             peaks_2.append(peaks['Contrast2'])
             peaks_99.append(peaks['Contrast99'])

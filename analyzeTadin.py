@@ -312,7 +312,8 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
             'lags': lags,
             'lagErrors': lagErrors,
             'contrasts': contrasts,
-            'targetRadii': targetRadii
+            'targetRadii': targetRadii,
+            'correlograms': correlograms
         }
 
         contrastsString = ",".join(str(x) for x in contrasts)
@@ -334,10 +335,11 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
         contrasts = results['contrasts']
         peaks = results['peaks']
         targetRadii = results['targetRadii']
+        correlograms = results['correlograms']
 
 
     print('oogie')
 
-    return peaks, contrasts, targetRadii
+    return peaks, contrasts, targetRadii, correlograms
 
 #analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load)

@@ -1,0 +1,29 @@
+
+Controls:
+SS_001 -> I think it's supposed to be SS_1073. I have a picture of the notes I was taking that day. Will omit this data because I think I sped up the routine after
+Why do I have 11 controls?
+
+
+
+
+
+
+
+PTHA:
+There's one PTHA case that didn't actually have symptoms. ID unknown, but likely the first? (SS_1401?)
+- unable to find patient log for SS_1401
+
+Where's the data for SS_1427?
+
+SS_1422 with insufficient data
+
+
+
+
+
+
+
+Migriane:
+One migraine case seems to break the numbering rules -- SS_1084
+
+One migraine case with bad data -- SS_1128

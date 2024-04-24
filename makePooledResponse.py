@@ -8,6 +8,8 @@ def makePooledResponse(loadBehavior):
     import os
     import matplotlib.pyplot as plt
 
+    import makeSubjectList.py
+
     basicTrialParams = getExperimentParams.getExperimentParams('horizontalContinuous')
 
 

@@ -18,6 +18,7 @@ def analyzeTadin(subjectID, **kwargs):
     import matplotlib.pyplot as plt
     import numpy as np
     import seaborn as sb
+    import makeStruct
 
     experimentName = 'tadin2019Continuous'
     experimentName = 'horizontalContinuous'
@@ -343,16 +344,48 @@ def analyzeTadin(subjectID, **kwargs):
                 plt.savefig(savePath + 'C' + str(cc) + '_trialCorrelograms.png')
                 plt.close()
 
+        # Clean up results for outputting
+        contrastString_forFieldNames = []
+        for contrast in contrasts:
+            contrastString_forFieldNames.append('Contrast'+str(contrast))
+
+        sizeString_forFieldNames = []
+        for size in targetSizes:
+            sizeString_forFieldNames.append('Size'+str(size))
+
+        statsFieldNames = ['peak', 'peakSEM', 'width', 'widthSEM', 'lag', 'lagSEM']
+
+        fieldsList_stats = [statsFieldNames, contrastString_forFieldNames, sizeString_forFieldNames]
+        fieldsList_correlograms = [contrastString_forFieldNames, sizeString_forFieldNames]
+
+
+        stats = makeStruct.makeStruct(fieldsList_stats)
+
+        correlogramsForSaving = makeStruct.makeStruct(fieldsList_correlograms)
+
+
+        for contrast in contrasts:
+            sizeCounter = 0
+            for size in targetSizes:
+                stats['peak']['Contrast'+str(contrast)]['Size'+str(size)] = peaks['Contrast'+str(contrast)][sizeCounter]
+                stats['peakSEM']['Contrast'+str(contrast)]['Size'+str(size)] = peakErrors['Contrast'+str(contrast)][sizeCounter]
+
+                stats['lag']['Contrast'+str(contrast)]['Size'+str(size)] = lags['Contrast'+str(contrast)][sizeCounter]
+                stats['lagSEM']['Contrast'+str(contrast)]['Size'+str(size)] = lagErrors['Contrast'+str(contrast)][sizeCounter]
+
+                stats['width']['Contrast'+str(contrast)]['Size'+str(size)] = widths['Contrast'+str(contrast)][sizeCounter]
+                stats['widthSEM']['Contrast'+str(contrast)]['Size'+str(size)] = widthErrors['Contrast'+str(contrast)][sizeCounter]
+
+                correlogramsForSaving['Contrast'+str(contrast)]['Size'+str(size)] = correlograms['Contrast'+str(contrast)][sizeCounter]
+
+                sizeCounter = sizeCounter + 1
+
+
+        correlograms = correlogramsForSaving
+
+
         results = {
-            'peaks': peaks,
-            'peakErrors': peakErrors,
-            'widths': widths,
-            'widthErrors': widthErrors,
-            'lags': lags,
-            'lagErrors': lagErrors,
-            'contrasts': contrasts,
-            'targetRadii': targetRadii,
-            'targetSizes': targetSizes,
+            'stats': stats,
             'correlograms': correlograms
         }
 
@@ -372,15 +405,12 @@ def analyzeTadin(subjectID, **kwargs):
         with open(savePath + 'C' + contrastsString + '_S' + sizesString + '_results.pkl', 'rb') as f:
             results = pickle.load(f)
 
-        contrasts = results['contrasts']
-        peaks = results['peaks']
-        targetRadii = results['targetRadii']
-        targetSizes = results['targetSizes']
+        stats = results['stats']
         correlograms = results['correlograms']
 
 
     print('oogie')
 
-    return peaks, contrasts, targetSizes, correlograms
+    return stats, correlograms
 
 #analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load)

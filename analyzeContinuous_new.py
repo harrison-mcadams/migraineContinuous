@@ -28,7 +28,7 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
         eventNames = ['mouseYVelocities', 'targetXVelocities', 'targetYVelocities', 'mouseXs', 'mouseYs', 'targetXs', 'targetYs', 'mouseXVelocities']
         eventTimeNames = ['frameTimes', 'frameTimes', 'frameTimes', 'frameTimes', 'frameTimes', 'frameTimes', 'frameTimes', 'frameTimes']
         trialParamsOfInterest = ['targetRadius_degrees', 'contrast']
-        trialDescriptor = 'S'+str(trialParams['targetRadius_degrees'])+'_C'+str(trialParams['contrast'])
+        trialDescriptor = 'S'+str(trialParams['targetRadius_degrees']*2)+'_C'+str(trialParams['contrast'])
         oneDMotion = True
     else:
         relevantTrialFiles = glob.glob(dataPath + '/' + experimentName + '/' + subjectID + '/**/*SF' + str(trialParams['spatialFrequency']) + '_C' + str(trialParams['gaborContrast']) + '_raw.pkl', recursive=True)
@@ -250,7 +250,7 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
                 gaussStatsPooled.update({'targetVelocities-mouseVelocities': fitStats_pooledAcrossTrials})
 
 
-    return meanCorrelations, correlationsPooled, gaussStats, gaussStatsPooled
+    return meanCorrelations, correlationsPooled, gaussStats, gaussStatsPooled, correlationTimebase
 
 
 

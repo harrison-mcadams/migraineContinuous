@@ -51,8 +51,22 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
     contrasts = (sorted(contrasts))
     targetRadii = (sorted(targetRadii))
 
+    targetRadii_forSaving = targetRadii
+    targetRadii_forOperating = np.array(targetRadii)
+    #targetRadii = np.array(targetRadii)
+
+    targetSizes = []
+    for ss in targetRadii:
+        size = ss*2
+        if float(size) == int(size):
+            size = int(size)
+
+        targetSizes.append(size)
+
     trialParams = trialData['trialParams']
     trialParams.update({'experimentName': experimentName})
+    trialParams.update({'targetSizes_degrees': targetSizes})
+
 
     savePath = basicTrialParams['analysisPath']+trialParams['experimentName']+'/meanResponses/'+subjectID+'/'
 
@@ -97,7 +111,7 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
                 trialParams.update({'targetRadius_degrees': rr})
                 trialParams.update({'contrast': cc})
 
-                meanCorrelations, correlationsPooled, gaussStats, gaussStatsPooled = analyzeContinuous_new.analyzeContinuous_new(subjectID, experimentName, trialParams)
+                meanCorrelations, correlationsPooled, gaussStats, gaussStatsPooled, correlationsTimebase = analyzeContinuous_new.analyzeContinuous_new(subjectID, experimentName, trialParams)
                 peak = gaussStats[comparison]['peak']
                 peakPooler.append(peak)
                 lag = gaussStats[comparison]['lag']
@@ -138,6 +152,9 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
         lagErrors = {'Contrast'+str(contrasts[0]): ''}
         widthErrors = {'Contrast'+str(contrasts[0]): ''}
 
+        # Save out the timebase
+        correlograms.update({'timebase': correlationsTimebase})
+
         for cc in range(len(contrasts)):
             SEMPooledPeaks = []
             SEMPooledLags = []
@@ -158,11 +175,11 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
             widthErrors.update({'Contrast'+str(contrasts[cc]): SEMPooledWidths})
             lagErrors.update({'Contrast'+str(contrasts[cc]): SEMPooledLags})
 
-        targetRadii = np.array(targetRadii)
+        #targetRadii = np.array(targetRadii)
         for cc in contrasts:
-            plt.errorbar(np.log(np.array(targetRadii)*2), peaks['Contrast'+str(cc)], peakErrors['Contrast'+str(cc)], label='Contrast: '+str(cc))
+            plt.errorbar(np.log(np.array(targetRadii_forOperating)*2), peaks['Contrast'+str(cc)], peakErrors['Contrast'+str(cc)], label='Contrast: '+str(cc))
         #plt.errorbar(np.log(targetRadii*2), peaks['Contrast'+str(contrasts[1])], peakErrors['Contrast'+str(contrasts[1])], label='Contrast: '+str(contrasts[1]))
-        plt.xticks(np.log(targetRadii*2), targetRadii*2)
+        plt.xticks(np.log(targetRadii_forOperating*2), targetRadii_forOperating*2)
         plt.xlabel('Stimulus Size (degrees)')
         plt.ylabel('Kernel Peak (r)')
         plt.legend()
@@ -176,11 +193,11 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
         plt.close()
 
         for cc in contrasts:
-            plt.errorbar(np.log(targetRadii*2), lags['Contrast'+str(cc)], lagErrors['Contrast'+str(cc)], label='Contrast: '+str(cc))
+            plt.errorbar(np.log(targetRadii_forOperating*2), lags['Contrast'+str(cc)], lagErrors['Contrast'+str(cc)], label='Contrast: '+str(cc))
 
             #plt.plot(np.log(targetRadii*2), lags['Contrast'+str(cc)], label='Contrast: '+str(cc))
             #plt.plot(np.log(targetRadii*2), lags['Contrast'+str(contrasts[1])], label='Contrast: '+str(contrasts[1]))
-        plt.xticks(np.log(targetRadii*2), targetRadii*2)
+        plt.xticks(np.log(targetRadii_forOperating*2), targetRadii_forOperating*2)
         plt.xlabel('Stimulus Size (degrees)')
         plt.ylabel('Kernel Lag (s)')
         plt.legend()
@@ -188,23 +205,23 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
         plt.close()
 
         for cc in contrasts:
-            plt.errorbar(np.log(targetRadii*2), widths['Contrast'+str(cc)], widthErrors['Contrast'+str(cc)], label='Contrast: '+str(cc))
+            plt.errorbar(np.log(targetRadii_forOperating*2), widths['Contrast'+str(cc)], widthErrors['Contrast'+str(cc)], label='Contrast: '+str(cc))
 
             #plt.plot(np.log(targetRadii*2), widths['Contrast'+str(cc)], label='Contrast: '+str(cc))
         #plt.plot(np.log(targetRadii*2), widths['Contrast'+str(contrasts[1])], label='Contrast: '+str(contrasts[1]))
-        plt.xticks(np.log(targetRadii*2), targetRadii*2)
+        plt.xticks(np.log(targetRadii_forOperating*2), targetRadii_forOperating*2)
         plt.xlabel('Stimulus Size (degrees)')
         plt.ylabel('Kernel Width (FWHM, s)')
         plt.legend()
         plt.savefig(savePath + 'CRF_widths.png')
         plt.close()
 
-        correlationsTimebase = np.array(range(-1*1000, 2*1000))/1000
+
         for cc in contrasts:
             correlationPlot = plt.figure()
             for rr in range(len(targetRadii)):
 
-                plt.plot(correlationsTimebase, correlograms['Contrast'+str(cc)][rr], label=targetRadii[rr], color='black', alpha=(rr+1)/(len(targetRadii)+1))
+                plt.plot(correlationsTimebase, correlograms['Contrast'+str(cc)][rr], label=targetSizes[rr], color='black', alpha=(rr+1)/(len(targetRadii)+1))
 
             plt.title('Contrast '+str(cc))
             plt.legend()
@@ -313,11 +330,12 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
             'lagErrors': lagErrors,
             'contrasts': contrasts,
             'targetRadii': targetRadii,
+            'targetSizes': targetSizes,
             'correlograms': correlograms
         }
 
         contrastsString = ",".join(str(x) for x in contrasts)
-        sizesString = ",".join(str(x) for x in targetRadii)
+        sizesString = ",".join(str(x) for x in targetSizes)
         with open(savePath + 'C' + contrastsString + '_S' + sizesString + '_results.pkl', 'wb') as f:
             pickle.dump(results, f)
         f.close()
@@ -328,18 +346,19 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
 
 
         contrastsString = ",".join(str(x) for x in contrasts)
-        sizesString = ",".join(str(x) for x in targetRadii)
+        sizesString = ",".join(str(x) for x in targetSizes)
         with open(savePath + 'C' + contrastsString + '_S' + sizesString + '_results.pkl', 'rb') as f:
             results = pickle.load(f)
 
         contrasts = results['contrasts']
         peaks = results['peaks']
         targetRadii = results['targetRadii']
+        targetSizes = results['targetSizes']
         correlograms = results['correlograms']
 
 
     print('oogie')
 
-    return peaks, contrasts, targetRadii, correlograms
+    return peaks, contrasts, targetSizes, correlograms
 
 #analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load)

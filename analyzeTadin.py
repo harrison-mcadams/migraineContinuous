@@ -8,8 +8,10 @@
 #inputtedContrasts = []
 #inputtedTargetRadii = []
 #comparison = 'targetXVelocities-mouseXVelocities'
+#def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load):
 
-def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load):
+
+def analyzeTadin(subjectID, **kwargs):
 
     import analyzeContinuous_new, getExperimentParams, glob, pickle
     import os
@@ -19,6 +21,26 @@ def analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, 
 
     experimentName = 'tadin2019Continuous'
     experimentName = 'horizontalContinuous'
+
+    if 'inputtedContrast' in kwargs:
+
+        inputtedContrasts = kwargs['inputtedContrast']
+        inputtedTargetRadii = kwargs['inputtedTargetRadii']
+
+    else:
+
+        inputtedContrasts = []
+        inputtedTargetRadii = []
+
+    if 'load' in kwargs:
+        load = kwargs['load']
+    else:
+        load = True
+
+    if 'comparison' in kwargs:
+        comparison = kwargs['comparison']
+    else:
+        comparison = 'targetXVelocities-mouseXVelocities'
 
     if inputtedContrasts == [] and inputtedTargetRadii == []:
         flexiblyDiscoverTrials = True

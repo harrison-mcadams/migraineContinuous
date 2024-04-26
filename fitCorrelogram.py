@@ -136,9 +136,14 @@ def fitCorrelogram(correlogram, correlationTimebase, saveName, **kwargs):
 
         y_pred = func(x, *popt)
 
+        peakGammaValue = max(y_pred)
+        peakGammaValue_index = list(y_pred).index(peakGammaValue)
+
+        lag = peakGammaValue_index - 1000
+
 
         fitStats =  {'peak': popt[3]}
-        fitStats.update({'lag': popt[1] - time0})
+        fitStats.update({'lag': lag})
         fitStats.update({'width': popt[2]})
         fitStats.update({'skew': popt[0]})
 

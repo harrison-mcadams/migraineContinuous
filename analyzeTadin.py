@@ -382,6 +382,7 @@ def analyzeTadin(subjectID, **kwargs):
 
 
         correlograms = correlogramsForSaving
+        correlograms.update({'timebase': correlationsTimebase})
 
 
         results = {

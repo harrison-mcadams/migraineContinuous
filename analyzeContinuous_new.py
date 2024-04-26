@@ -1,4 +1,4 @@
-def analyzeContinuous_new(subjectID, experimentName, trialParams):
+def analyzeContinuous_new(subjectID, experimentName, trialParams, **kwargs):
 
     ## Find the data
     import glob
@@ -8,12 +8,12 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
     import os
     from psychopy import visual
     from scipy.optimize import curve_fit
-    import fitGaussian
+    import fitCorrelogram
 
     ## Establish analysis parameters
     debugPlotting = False
     savePathRoot = os.path.expanduser('~') + '/Desktop/surroundSuppressionPTHA/analysis/'
-    savePath = savePathRoot + '/' + experimentName + '/' + subjectID + '/'
+    savePath = savePathRoot + '/' + experimentName + '/correlograms/' + subjectID + '/'
 
     trials = 'all'
 
@@ -22,6 +22,11 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
     dataPath = os.path.expanduser('~') + '/Desktop/surroundSuppressionPTHA/data/'
 
     # Find the trials
+
+    if 'modelType' in kwargs:
+        modelType = kwargs['modelType']
+    else:
+        modelType = 'gamma'
 
     if experimentName == 'horizontalContinuous':
         relevantTrialFiles = glob.glob(dataPath + '/' + experimentName + '/' + subjectID + '/**/*S' + str(trialParams['targetRadius_degrees']) + '_C' + str(trialParams['contrast']) + '_raw.pkl', recursive=True)
@@ -212,7 +217,8 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
             saveSuffix = ''
             correlogram = meanCorrelations[stimulusNames[cc] + '-' + responseNames[cc]]
 
-            fitStats_perComparison = fitGaussian.fitGaussian(correlogram, correlationTimebase, stimulusNames[cc], responseNames[cc], saveSuffix, savePath, trialDescriptor)
+            saveName = savePath + trialDescriptor + '_crossCorrelation_' + stimulusNames[cc] + '-' + responseNames[cc] + saveSuffix + '.png'
+            fitStats_perComparison = fitCorrelogram.fitCorrelogram(correlogram, correlationTimebase, saveName, modelType='gamma')
 
             gaussStats.update({stimulusNames[cc] + '-' + responseNames[cc]: fitStats_perComparison})
 
@@ -221,8 +227,10 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
             for tt in range(nTrials):
                 correlogram = correlationsPooled[stimulusNames[cc] + '-' + responseNames[cc]][tt]
 
-                fitStats_perTrial = fitGaussian.fitGaussian(correlogram, correlationTimebase, stimulusNames[cc],
-                                                     responseNames[cc], '_trial'+str(tt+1), savePath, trialDescriptor)
+                saveName = savePath + trialDescriptor + '_crossCorrelation_' + stimulusNames[cc] + '-' + responseNames[cc] + 'trial' + str(tt+1) + '.png'
+                fitStats_perTrial = fitCorrelogram.fitCorrelogram(correlogram, correlationTimebase, saveName,
+                                                                       modelType='gamma')
+
                 fitStats_pooledAcrossTrials.append(fitStats_perTrial)
             gaussStatsPooled.update({stimulusNames[cc] + '-' + responseNames[cc]: fitStats_pooledAcrossTrials})
 
@@ -235,15 +243,18 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams):
                 stimulusName = 'targetVelocities'
                 responseName = 'mouseVelocities'
 
-                fitStats_perComparison = fitGaussian.fitGaussian(correlogram, correlationTimebase, stimulusName, responseName, saveSuffix, savePath, trialDescriptor)
+                saveName = savePath + trialDescriptor + '_crossCorrelation_' + stimulusName + '-' + responseName + saveSuffix + '.png'
+                fitStats_perComparison = fitCorrelogram.fitCorrelogram(correlogram, correlationTimebase, saveName,
+                                                                       modelType='gamma')
                 gaussStats.update({stimulusName+'-'+responseName: fitStats_perComparison})
 
                 fitStats_pooledAcrossTrials = []
                 for tt in range(nTrials):
                     correlogram = (np.array(correlationsPooled['targetXVelocities-mouseXVelocities'][tt])+np.array(correlationsPooled['targetYVelocities-mouseYVelocities'][tt]))/2
 
-                    fitStats_perTrial = fitGaussian.fitGaussian(correlogram, correlationTimebase, 'targetVelocities',
-                                                         'mouseVelocities', '_trial'+str(tt+1), savePath, trialDescriptor)
+                    saveName = savePath + trialDescriptor + '_crossCorrelation_' + stimulusName + '-' + responseName + 'trial' + str(tt+1) + '.png'
+                    fitStats_perTrial = fitCorrelogram.fitCorrelogram(correlogram, correlationTimebase, saveName,
+                                                                           modelType='gamma')
 
                     fitStats_pooledAcrossTrials.append(fitStats_perTrial)
 

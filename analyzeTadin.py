@@ -48,6 +48,11 @@ def analyzeTadin(subjectID, **kwargs):
     else:
         flexiblyDiscoverTrials = False
 
+    if 'modelType' in kwargs:
+        modelType = kwargs['modelType']
+    else:
+        modelType = 'gamma'
+
     basicTrialParams = getExperimentParams.getExperimentParams(experimentName)
 
     # Load up an example trialParams from the session
@@ -91,7 +96,7 @@ def analyzeTadin(subjectID, **kwargs):
     trialParams.update({'targetSizes_degrees': targetSizes})
 
 
-    savePath = basicTrialParams['analysisPath']+trialParams['experimentName']+'/meanResponses/'+subjectID+'/'
+    savePath = basicTrialParams['analysisPath']+trialParams['experimentName']+'/correlograms/'+subjectID+'/'
 
     correlationYLims = [-0.05, 0.3]
 
@@ -134,7 +139,7 @@ def analyzeTadin(subjectID, **kwargs):
                 trialParams.update({'targetRadius_degrees': rr})
                 trialParams.update({'contrast': cc})
 
-                meanCorrelations, correlationsPooled, gaussStats, gaussStatsPooled, correlationsTimebase = analyzeContinuous_new.analyzeContinuous_new(subjectID, experimentName, trialParams)
+                meanCorrelations, correlationsPooled, gaussStats, gaussStatsPooled, correlationsTimebase = analyzeContinuous_new.analyzeContinuous_new(subjectID, experimentName, trialParams, modelType=modelType)
                 peak = gaussStats[comparison]['peak']
                 peakPooler.append(peak)
                 lag = gaussStats[comparison]['lag']

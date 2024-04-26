@@ -2,6 +2,17 @@ def makeStruct(listOfFields):
 
     nFields = len(listOfFields)
 
+    if nFields == 1:
+        fieldLevel0 = listOfFields[0]
+        zeroCounter = 1
+        for zero in fieldLevel0:
+            if zeroCounter == 1:
+                struct = {zero: []}
+            else:
+                struct.update({zero: []})
+            zeroCounter = zeroCounter + 1
+
+
 
     if nFields == 2:
 

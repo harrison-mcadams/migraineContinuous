@@ -15,14 +15,11 @@ def makeGroupResponse(loadBehavior):
 
     load = loadBehavior
 
-    inputtedContrasts = [2, 99]
-    if loadBehavior:
-        inputtedTargetRadii = [0.75, 1.5, 3.0, 6.0]
-    else:
-        inputtedTargetRadii = [0.75, 1.5, 3, 6]
-        inputtedTargetRadii = [0.75, 1.5, 3.0, 6.0]
-    contrastsString = ",".join(str(x) for x in inputtedContrasts)
-    sizesString = ",".join(str(x) for x in inputtedTargetRadii)
+    sizes = [1.5, 3, 6, 12]
+    contrasts = [2, 99]
+
+    contrastsString = ",".join(str(x) for x in contrasts)
+    sizesString = ",".join(str(x) for x in sizes)
 
     comparison = 'targetXVelocities-mouseXVelocities'
 
@@ -65,7 +62,7 @@ def makeGroupResponse(loadBehavior):
             groupsCounter = groupsCounter + 1
 
             contrastCounter = 1
-            for contrast in inputtedContrasts:
+            for contrast in contrasts:
                 if contrastCounter == 1:
                     pooledCorrelograms[group] = {'Contrast' + str(contrast): []}
                     pooledPeaks[group] = {'Contrast' + str(contrast): []}
@@ -82,26 +79,26 @@ def makeGroupResponse(loadBehavior):
                     SEMPeaks[group].update({'Contrast' + str(contrast): []})
                 contrastCounter = contrastCounter + 1
 
-                radiusCounter = 1
-                for radius in inputtedTargetRadii:
-                    if radiusCounter == 1:
-                        pooledCorrelograms[group]['Contrast'+str(contrast)] =  {'Radius'+str(radius): []}
-                        pooledPeaks[group]['Contrast'+str(contrast)] =  {'Radius'+str(radius): []}
-                        meanCorrelograms[group]['Contrast'+str(contrast)] =  {'Radius'+str(radius): []}
-                        meanPeaks[group]['Contrast'+str(contrast)] =  {'Radius'+str(radius): []}
-                        SEMCorrelograms[group]['Contrast'+str(contrast)] =  {'Radius'+str(radius): []}
-                        SEMPeaks[group]['Contrast'+str(contrast)] =  {'Radius'+str(radius): []}
+                sizeCounter = 1
+                for size in sizes:
+                    if sizeCounter == 1:
+                        pooledCorrelograms[group]['Contrast'+str(contrast)] =  {'Size'+str(size): []}
+                        pooledPeaks[group]['Contrast'+str(contrast)] =  {'Size'+str(size): []}
+                        meanCorrelograms[group]['Contrast'+str(contrast)] =  {'Size'+str(size): []}
+                        meanPeaks[group]['Contrast'+str(contrast)] =  {'Size'+str(size): []}
+                        SEMCorrelograms[group]['Contrast'+str(contrast)] =  {'Size'+str(size): []}
+                        SEMPeaks[group]['Contrast'+str(contrast)] =  {'Size'+str(size): []}
 
 
                     else:
-                        pooledCorrelograms[group]['Contrast'+str(contrast)].update({'Radius'+str(radius): []})
-                        pooledPeaks[group]['Contrast'+str(contrast)].update({'Radius'+str(radius): []})
-                        meanCorrelograms[group]['Contrast'+str(contrast)].update({'Radius'+str(radius): []})
-                        meanPeaks[group]['Contrast'+str(contrast)].update({'Radius'+str(radius): []})
-                        SEMCorrelograms[group]['Contrast'+str(contrast)].update({'Radius'+str(radius): []})
-                        SEMPeaks[group]['Contrast'+str(contrast)].update({'Radius'+str(radius): []})
+                        pooledCorrelograms[group]['Contrast'+str(contrast)].update({'Size'+str(size): []})
+                        pooledPeaks[group]['Contrast'+str(contrast)].update({'Size'+str(size): []})
+                        meanCorrelograms[group]['Contrast'+str(contrast)].update({'Size'+str(size): []})
+                        meanPeaks[group]['Contrast'+str(contrast)].update({'Size'+str(size): []})
+                        SEMCorrelograms[group]['Contrast'+str(contrast)].update({'Size'+str(size): []})
+                        SEMPeaks[group]['Contrast'+str(contrast)].update({'Size'+str(size): []})
 
-                    radiusCounter = radiusCounter + 1
+                    sizeCounter = sizeCounter + 1
 
         ## Do the pooling
         for group in groups:
@@ -109,32 +106,31 @@ def makeGroupResponse(loadBehavior):
 
             for subjectID in subjectIDs[group]:
 
-                peaks, contrasts, targetRadii, correlograms = analyzeTadin.analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, True)
+                stats, correlograms = analyzeTadin.analyzeTadin(subjectID, load=load)
 
-                peaks_2.append(peaks['Contrast2'])
-                peaks_99.append(peaks['Contrast99'])
 
-                for contrast in inputtedContrasts:
-                    radiusCounter = 0
-                    for radius in inputtedTargetRadii:
-                        pooledCorrelograms[group]['Contrast'+str(contrast)]['Radius'+str(radius)].append(correlograms['Contrast'+str(contrast)][radiusCounter])
-                        pooledPeaks[group]['Contrast'+str(contrast)]['Radius'+str(radius)].append(peaks['Contrast'+str(contrast)][radiusCounter])
 
-                        radiusCounter = radiusCounter + 1
+                for contrast in contrasts:
+                    sizeCounter = 0
+                    for size in sizes:
+                        pooledCorrelograms[group]['Contrast'+str(contrast)]['Size'+str(size)].append(correlograms['Contrast'+str(contrast)]['Size'+str(size)])
+                        pooledPeaks[group]['Contrast'+str(contrast)]['Size'+str(size)].append(stats['peak']['Contrast'+str(contrast)]['Size'+str(size)])
+
+                        sizeCounter = sizeCounter + 1
 
         ## Collapse pooling into mean and SEM
         for group in groups:
-            for contrast in inputtedContrasts:
-                radiusCounter = 0
-                for radius in inputtedTargetRadii:
-                    meanPeaks[group]['Contrast'+str(contrast)]['Radius'+str(radius)] = np.mean(pooledPeaks[group]['Contrast'+str(contrast)]['Radius'+str(radius)])
-                    SEMPeaks[group]['Contrast'+str(contrast)]['Radius'+str(radius)] = np.std(pooledPeaks[group]['Contrast'+str(contrast)]['Radius'+str(radius)])/(len(pooledPeaks[group]['Contrast'+str(contrast)]['Radius'+str(radius)])**0.5)
+            for contrast in contrasts:
+                sizeCounter = 0
+                for size in sizes:
+                    meanPeaks[group]['Contrast'+str(contrast)]['Size'+str(size)] = np.mean(pooledPeaks[group]['Contrast'+str(contrast)]['Size'+str(size)])
+                    SEMPeaks[group]['Contrast'+str(contrast)]['Size'+str(size)] = np.std(pooledPeaks[group]['Contrast'+str(contrast)]['Size'+str(size)])/(len(pooledPeaks[group]['Contrast'+str(contrast)]['Size'+str(size)])**0.5)
 
-                    meanCorrelograms[group]['Contrast'+str(contrast)]['Radius'+str(radius)] = np.mean(pooledCorrelograms[group]['Contrast'+str(contrast)]['Radius'+str(radius)],0)
-                    SEMCorrelograms[group]['Contrast'+str(contrast)]['Radius'+str(radius)] = np.std(pooledCorrelograms[group]['Contrast'+str(contrast)]['Radius'+str(radius)],0)/(np.size(pooledPeaks[group]['Contrast'+str(contrast)]['Radius'+str(radius)],0)**0.5)
+                    meanCorrelograms[group]['Contrast'+str(contrast)]['Size'+str(size)] = np.mean(pooledCorrelograms[group]['Contrast'+str(contrast)]['Size'+str(size)],0)
+                    SEMCorrelograms[group]['Contrast'+str(contrast)]['Size'+str(size)] = np.std(pooledCorrelograms[group]['Contrast'+str(contrast)]['Size'+str(size)],0)/(np.size(pooledPeaks[group]['Contrast'+str(contrast)]['Size'+str(size)],0)**0.5)
 
 
-                radiusCounter = radiusCounter + 1
+                sizeCounter = sizeCounter + 1
 
         ## Do some plotting
 
@@ -151,12 +147,12 @@ def makeGroupResponse(loadBehavior):
             for contrast in contrasts:
                 if contrast == 99:
                     plt.errorbar(
-                        np.log(np.array(inputtedTargetRadii) * 2),
-                        [meanPeaks[group]['Contrast'+str(contrast)]['Radius'+str(inputtedTargetRadii[0])], meanPeaks[group]['Contrast'+str(contrast)]['Radius'+str(inputtedTargetRadii[1])], meanPeaks[group]['Contrast'+str(contrast)]['Radius'+str(inputtedTargetRadii[2])], meanPeaks[group]['Contrast'+str(contrast)]['Radius'+str(inputtedTargetRadii[3])]],
-                        [SEMPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[0])],
-                         SEMPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[1])],
-                         SEMPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[2])],
-                         SEMPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[3])]],
+                        np.log(sizes),
+                        [meanPeaks[group]['Contrast'+str(contrast)]['Size'+str(sizes[0])], meanPeaks[group]['Contrast'+str(contrast)]['Size'+str(sizes[1])], meanPeaks[group]['Contrast'+str(contrast)]['Size'+str(sizes[2])], meanPeaks[group]['Contrast'+str(contrast)]['Size'+str(sizes[3])]],
+                        [SEMPeaks[group]['Contrast' + str(contrast)]['Size' + str(sizes[0])],
+                         SEMPeaks[group]['Contrast' + str(contrast)]['Size' + str(sizes[1])],
+                         SEMPeaks[group]['Contrast' + str(contrast)]['Size' + str(sizes[2])],
+                         SEMPeaks[group]['Contrast' + str(contrast)]['Size' + str(sizes[3])]],
 
                         color=groupColors[group],
                         label=groups[groupCounter],
@@ -164,15 +160,15 @@ def makeGroupResponse(loadBehavior):
                     )
                 else:
                     plt.errorbar(
-                        np.log(np.array(inputtedTargetRadii) * 2),
-                        [meanPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[0])],
-                         meanPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[1])],
-                         meanPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[2])],
-                         meanPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[3])]],
-                        [SEMPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[0])],
-                         SEMPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[1])],
-                         SEMPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[2])],
-                         SEMPeaks[group]['Contrast' + str(contrast)]['Radius' + str(inputtedTargetRadii[3])]],
+                        np.log(sizes),
+                        [meanPeaks[group]['Contrast' + str(contrast)]['Size' + str(sizes[0])],
+                         meanPeaks[group]['Contrast' + str(contrast)]['Size' + str(sizes[1])],
+                         meanPeaks[group]['Contrast' + str(contrast)]['Size' + str(sizes[2])],
+                         meanPeaks[group]['Contrast' + str(contrast)]['Size' + str(sizes[3])]],
+                        [SEMPeaks[group]['Contrast' + str(contrast)]['Size' + str(sizes[0])],
+                         SEMPeaks[group]['Contrast' + str(contrast)]['Size' + str(sizes[1])],
+                         SEMPeaks[group]['Contrast' + str(contrast)]['Size' + str(sizes[2])],
+                         SEMPeaks[group]['Contrast' + str(contrast)]['Size' + str(sizes[3])]],
 
                         color=groupColors[group],
                         linestyle=contrastLineStyles[str(contrast)]
@@ -183,7 +179,7 @@ def makeGroupResponse(loadBehavior):
 
 
 
-        plt.xticks(np.log(targetRadii*2), targetRadii*2)
+        plt.xticks(np.log(sizes), sizes)
         plt.xlabel('Stimulus Size (degrees)')
         plt.ylabel('Kernel Peak (r)')
         plt.legend()
@@ -204,9 +200,9 @@ def makeGroupResponse(loadBehavior):
         groupCounter = 0
 
         for contrast in contrasts:
-            for radius in inputtedTargetRadii:
+            for size in sizes:
                 for group in groups:
-                    plt.plot(correlationTimebase, meanCorrelograms[group]['Contrast'+str(contrast)]['Radius'+str(radius)],
+                    plt.plot(correlationTimebase, meanCorrelograms[group]['Contrast'+str(contrast)]['Size'+str(size)],
                              color=groupColors[group],
                              label=group,
                              )
@@ -215,7 +211,7 @@ def makeGroupResponse(loadBehavior):
                 plt.ylabel('Cross Correlation')
                 plt.legend()
                 plt.ylim([-0.025, 0.25])
-                plt.savefig(savePath + 'C'+str(contrast)+'_S'+str(2*radius)+'_crossCorrelogram.png')
+                plt.savefig(savePath + 'C'+str(contrast)+'_S'+str(size)+'_crossCorrelogram.png')
                 plt.close()
 
                 groupCounter = groupCounter + 1
@@ -240,4 +236,4 @@ def makeGroupResponse(loadBehavior):
     return results
 
 
-#makeGroupResponse(False)
+makeGroupResponse(False)

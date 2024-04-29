@@ -215,9 +215,9 @@ def analyzeTadin(subjectID, **kwargs):
         plt.savefig(savePath + 'CRF_peaks.png')
 
 
-        if not os.path.exists(basicTrialParams['analysisPath'] + '/horizontalContinuous/pooled/'):
-            os.makedirs(basicTrialParams['analysisPath'] + '/horizontalContinuous/pooled/')
-        plt.savefig(basicTrialParams['analysisPath'] + '/horizontalContinuous/pooled/' + subjectID + '_CRF_peaks.png')
+        if not os.path.exists(basicTrialParams['analysisPath'] + '/horizontalContinuous/correlograms/pooled/'):
+            os.makedirs(basicTrialParams['analysisPath'] + '/horizontalContinuous/correlograms/pooled/')
+        plt.savefig(basicTrialParams['analysisPath'] + '/horizontalContinuous/correlograms/pooled/' + subjectID + '_CRF_peaks.png')
         plt.close()
 
         for cc in contrasts:
@@ -392,7 +392,8 @@ def analyzeTadin(subjectID, **kwargs):
 
         results = {
             'stats': stats,
-            'correlograms': correlograms
+            'correlograms': correlograms,
+            'modelType': modelType
         }
 
         contrastsString = ",".join(str(x) for x in contrasts)

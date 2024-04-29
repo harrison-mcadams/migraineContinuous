@@ -64,7 +64,7 @@ def fitCorrelogram(correlogram, correlationTimebase, saveName, **kwargs):
             r2_rounded = round(r2, 3)
 
         fitStats= {'peak': peak}
-        fitStats.update({'lag': lag})
+        fitStats.update({'lag': lag*1000})
         fitStats.update({'width': width_fwhm})
         fitStats.update({'R2': r2})
 
@@ -110,7 +110,7 @@ def fitCorrelogram(correlogram, correlationTimebase, saveName, **kwargs):
             r2_rounded = round(r2, 3)
 
         fitStats= {'peak': peak}
-        fitStats.update({'lag': lag})
+        fitStats.update({'lag': lag*1000})
         fitStats.update({'width': width_fwhm})
         fitStats.update({'R2': r2})
 
@@ -129,15 +129,15 @@ def fitCorrelogram(correlogram, correlationTimebase, saveName, **kwargs):
 
         startingValues = [2, 1200, 85, 0.15]
         upperBounds = [100, 2999, 1000, 1]
-        lowerBounds = [0, 1000, 0, 0]
+        lowerBounds = [0, 1000, 0, -1]
 
         popt, pcov = curve_fit(func, x, correlogram, p0=startingValues, maxfev=100000,
                                bounds = [lowerBounds, upperBounds])
 
         y_pred = func(x, *popt)
 
-        peakGammaValue = max(y_pred)
-        peakGammaValue_index = list(y_pred).index(peakGammaValue)
+        peakGammaValue = max(np.abs(y_pred))
+        peakGammaValue_index = list(np.abs(y_pred)).index(peakGammaValue)
 
         lag = peakGammaValue_index - 1000
 

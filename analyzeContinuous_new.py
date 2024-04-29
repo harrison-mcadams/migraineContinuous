@@ -218,7 +218,7 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams, **kwargs):
             correlogram = meanCorrelations[stimulusNames[cc] + '-' + responseNames[cc]]
 
             saveName = savePath + trialDescriptor + '_crossCorrelation_' + stimulusNames[cc] + '-' + responseNames[cc] + saveSuffix + '.png'
-            fitStats_perComparison = fitCorrelogram.fitCorrelogram(correlogram, correlationTimebase, saveName, modelType='gamma')
+            fitStats_perComparison = fitCorrelogram.fitCorrelogram(correlogram, correlationTimebase, saveName, modelType=modelType)
 
             gaussStats.update({stimulusNames[cc] + '-' + responseNames[cc]: fitStats_perComparison})
 
@@ -229,7 +229,7 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams, **kwargs):
 
                 saveName = savePath + trialDescriptor + '_crossCorrelation_' + stimulusNames[cc] + '-' + responseNames[cc] + 'trial' + str(tt+1) + '.png'
                 fitStats_perTrial = fitCorrelogram.fitCorrelogram(correlogram, correlationTimebase, saveName,
-                                                                       modelType='gamma')
+                                                                       modelType=modelType)
 
                 fitStats_pooledAcrossTrials.append(fitStats_perTrial)
             gaussStatsPooled.update({stimulusNames[cc] + '-' + responseNames[cc]: fitStats_pooledAcrossTrials})
@@ -245,7 +245,7 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams, **kwargs):
 
                 saveName = savePath + trialDescriptor + '_crossCorrelation_' + stimulusName + '-' + responseName + saveSuffix + '.png'
                 fitStats_perComparison = fitCorrelogram.fitCorrelogram(correlogram, correlationTimebase, saveName,
-                                                                       modelType='gamma')
+                                                                       modelType=modelType)
                 gaussStats.update({stimulusName+'-'+responseName: fitStats_perComparison})
 
                 fitStats_pooledAcrossTrials = []
@@ -254,7 +254,7 @@ def analyzeContinuous_new(subjectID, experimentName, trialParams, **kwargs):
 
                     saveName = savePath + trialDescriptor + '_crossCorrelation_' + stimulusName + '-' + responseName + 'trial' + str(tt+1) + '.png'
                     fitStats_perTrial = fitCorrelogram.fitCorrelogram(correlogram, correlationTimebase, saveName,
-                                                                           modelType='gamma')
+                                                                           modelType=modelType)
 
                     fitStats_pooledAcrossTrials.append(fitStats_perTrial)
 

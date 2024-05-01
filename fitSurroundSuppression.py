@@ -75,6 +75,11 @@ def fitSurroundSuppression(subjectID, **kwargs):
     else:
         model = 'tadin'
 
+    if 'useLog' in kwargs:
+        useLog = kwargs['useLog']
+    else:
+        useLog = False
+
     # Get the data
     groups = ['migraine', 'controls', 'ptha']
     if subjectID in groups:
@@ -125,10 +130,11 @@ def fitSurroundSuppression(subjectID, **kwargs):
             'Ai': [0, 100, 1000],
             'alpha': [0,1,10],
             'beta': [0,3,10],
-            'c50e': [0, 0.1, 10],
-            'c50i': [0, 0.1, 10],
-            'ne': [0, 1, 10],
-            'ni': [0, 1, 10]}
+            'c50e': [0, 0.1, 1],
+            'c50i': [0, 0.1, 1],
+            'ne': [0, 3, 7],
+            'ni': [0, 5, 7]}
+
 
         def calcCRF(contrasts, Ae, Ai, c50e, c50i, ne, ni):
 
@@ -136,8 +142,8 @@ def fitSurroundSuppression(subjectID, **kwargs):
             Kis = []
             for contrast in contrasts:
 
-                if contrast > 1:
-                    contrast = contrast / 100
+
+                contrast = contrast / 100
 
                 Ke = Ae * contrast ** ne / ((contrast) ** ne + c50e ** ne)
                 Kes.append(Ke)
@@ -153,7 +159,8 @@ def fitSurroundSuppression(subjectID, **kwargs):
             Is = []
             for size in sizes:
 
-                    size = np.log(size)
+                    if useLog:
+                        size = np.log(size)
 
                     E = 1-np.e**(-((size**2)/(alpha**2))/2)
                     Es.append(E)
@@ -218,25 +225,20 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
         #[alpha0, beta1, Ae2, Ai3, ne4, ni5, c50e6, c50i7, R0, C]
 
-        fittedParams = {'Ae': popt[2],
-            'Ai': popt[3],
-            'alpha': popt[0],
-            'beta': popt[1],
-            'c50e': popt[6],
-            'c50i': popt[7],
-            'ne': popt[4],
-            'ni': popt[5]}
+        fittedParams = {'Ae': popt[0],
+            'Ai': popt[1],
+            'alpha': popt[2],
+            'beta': popt[3],
+            'c50e': popt[4],
+            'c50i': popt[5],
+            'ne': popt[6],
+            'ni': popt[7]}
 
-        Ae_fit = popt[2]
-        Ai_fit = popt[3]
-        alpha_fit = popt[0]
-        beta_fit = popt[1]
-        c50e_fit = popt[6]
-        c50i_fit = popt[7]
-        ne_fit = popt[4]
-        ni_fit = popt[5]
 
     predictionSizes = np.array(range(int(np.ceil(sizes[-1]*1.5*1000))))/1000
+
+    if useLog:
+        predictionSizes = predictionSizes[1:-1]
     y_pred = spatialSuppressionMechanisticModel((predictionSizes,contrasts), *popt)
     y_pred = y_pred.reshape(len(predictionSizes), len(contrasts))
 
@@ -255,10 +257,11 @@ def fitSurroundSuppression(subjectID, **kwargs):
             meanVector.append(stats['mean']['Contrast'+str(contrast)]['Size'+str(size)])
             SEMVector.append(stats['SEM']['Contrast'+str(contrast)]['Size'+str(size)])
 
+        fig, (ax1, ax2, ax3) = plt.subplots(1,3)
 
-        plt.plot(np.log(predictionSizes), y_pred[:,counter], color='red')
+        ax1.plot(np.log(predictionSizes), y_pred[:,counter], color='red')
         #plt.plot(np.log(sizes), meanVector, label=str(contrast)+'%')
-        plt.errorbar(np.log(sizes), meanVector, SEMVector,
+        ax1.errorbar(np.log(sizes), meanVector, SEMVector,
                      label='Contrast: ' + str(contrast), ls='none')
 
         counter = counter+1
@@ -266,80 +269,47 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
 
  #   plt.plot(np.log(sizes), peaks['Contrast0.07'])
-    plt.xlim([np.log(sizes[0]) - np.log(1.1), np.log(sizes[-1]) + np.log(1.1)])
-    plt.ylim([-0, 0.25])
-    plt.xticks(np.log(sizes), sizes)
-    plt.xlabel('Stimulus Size (degrees)')
-    plt.ylabel(summaryStatistic)
-    plt.legend()
-    plt.title('R2 = '+str(round(r2,4)))
+    ax1.set_xlim([np.log(sizes[0]) - np.log(1.1), np.log(sizes[-1]) + np.log(1.1)])
+    ax1.set_ylim([-0, 0.25])
+    ax1.set_xticks(np.log(sizes), sizes)
+    ax1.set_xlabel('Stimulus Size (degrees)')
+    ax1.set_ylabel(summaryStatistic)
+    ax1.legend()
+    ax1.set_title('R2 = '+str(round(r2,4)))
+
+    # Plot the SRF
+    ax2.set_title('Size Response Function')
+    Es, Is = calcSRF(predictionSizes, fittedParams['alpha'], fittedParams['beta'])
+    ax2.plot(predictionSizes, Es, label='E')
+    ax2.plot(predictionSizes, Is, label='I')
+    ax2.set_xlim([np.log(sizes[0]) - np.log(1.1), np.log(sizes[-1]) + np.log(1.1)])
+    ax2.set_xticks(np.log(sizes), sizes)
+    ax2.set_xlabel('Stimulus Size (degrees)')
+    ax2.legend()
+
+    # Plot the CRF
+    ax3.set_title('Contrast Response Function')
+    predictionContrasts = np.linspace(0, 100, 10000)
+
+    Kes, Kis = calcCRF(predictionContrasts, fittedParams['Ae'], fittedParams['Ai'], fittedParams['c50e'], fittedParams['c50i'], fittedParams['ne'], fittedParams['ni'])
+    ax3.plot(predictionContrasts, Kes, label='Ke')
+    ax3.plot(predictionContrasts, Kis, label='Ki')
+    ax3.set_xlim([-5, 105])
+    ax3.set_xticks([0, 50, 100])
+    ax3.set_xlabel('Stimulus Contrast')
+    ax3.legend()
 
     savePathRoot = os.path.expanduser('~') + '/Desktop/surroundSuppressionPTHA/analysis/'
     savePath = savePathRoot + '/' + 'horizontalContinuous' + '/modelFits/'
 
     contrastsString = ",".join(str(x) for x in contrasts)
     sizesString = ",".join(str(x) for x in sizes)
-    plt.savefig(savePath + 'C' + contrastsString + '_S' + sizesString + '_'+subjectID+'_tadinFit.png', bbox_inches="tight")
-    plt.close()
+    fig.set_figwidth(13)
+
+    fig.savefig(savePath + 'C' + contrastsString + '_S' + sizesString + '_'+subjectID+'_tadinFit.png', bbox_inches="tight")
+    fig.close()
 
 
-    ## Plot out the inner model components
-    ws = np.linspace(0, 15, 100000)
-    Es = []
-    Is = []
-    for w in ws:
-        E = 1 - np.e ** (-((w / alpha_fit) ** 2) / 2)
-        Es.append(E)
-        I = 1 - np.e ** (-((w / beta_fit) ** 2) / 2)
-        Is.append(I)
-
-    plt.plot(np.log(ws), Es, label='E', color='k', linestyle='-')
-    plt.plot(np.log(ws), Is, label='I', color='k', linestyle='--')
-
-    plt.legend()
-    plt.xlabel('Stimulus Size (degrees)')
-    plt.ylabel('E, excitatory center')
-    desiredXTicks = [1.5, 3, 6, 12]
-    plt.xticks(np.log(desiredXTicks), desiredXTicks)
-    plt.xlim([np.log(1.5) - np.log(1.1), np.log(12) + np.log(1.1)])
-    plt.savefig(savePath + 'R2' + str(r2) + '_tadinFit_centerSurround.png', bbox_inches="tight")
-    plt.close()
-
-    cs = np.linspace(0, 100, 10000)
-    Kes = []
-    Kis = []
-
-    for c in cs:
-        c = c/100
-        Ke = Ae_fit * ((c ** ne_fit) / (c ** ne_fit + c50e_fit ** ne_fit))
-        Kes.append(Ke)
-
-        Ki = Ai_fit * ((c ** ni_fit) / (c ** ni_fit + c50i_fit ** ni_fit))
-        Kis.append(Ki)
-
-
-
-
-    plt.plot(cs, Kes, label='Ke', color='k', linestyle='-')
-    plt.plot(cs, Kis, label='Ki', color='k', linestyle='--')
-
-    plt.legend()
-    plt.xlabel('Contrast')
-    plt.ylabel('K')
-    # desiredXTicks = [1.5, 3, 6, 12]
-    # plt.xticks(np.log(desiredXTicks), desiredXTicks)
-    # plt.xlim([np.log(1.5)-np.log(1.1), np.log(12)+np.log(1.1)])
-    plt.savefig(savePath +'R2' + str(r2) + '_tadinFit_nakaRushton.png', bbox_inches="tight")
-
-    plt.close()
-
-
-
-
-    print('yikes')
-
-#fitTadin(sizes, peaks, contrasts)
-#sizes = targetRadii
 
 fitSurroundSuppression('controls', contrasts=[99])
 

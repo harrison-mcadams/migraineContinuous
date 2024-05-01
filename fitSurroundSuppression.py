@@ -130,9 +130,65 @@ def fitSurroundSuppression(subjectID, **kwargs):
             'ne': [0, 1, 10],
             'ni': [0, 1, 10]}
 
+        def calcCRF(contrasts, Ae, Ai, c50e, c50i, ne, ni):
+
+            Kes = []
+            Kis = []
+            for contrast in contrasts:
+
+                if contrast > 1:
+                    contrast = contrast / 100
+
+                Ke = Ae * contrast ** ne / ((contrast) ** ne + c50e ** ne)
+                Kes.append(Ke)
+                Ki = Ai * contrast ** ni / ((contrast) ** ni + c50i ** ni)
+                Kis.append(Ki)
+
+            return Kes, Kis
+
+
+        def calcSRF(sizes, alpha, beta):
+
+            Es = []
+            Is = []
+            for size in sizes:
+
+                    E = 1-np.e**(-((size**2)/(alpha**2))/2)
+                    Es.append(E)
+
+                    I = 1-np.e**(-((size**2)/(beta**2))/2)
+                    Is.append(I)
+
+            return Es, Is
+
+        def calcSurroundSuppression(sizes, contrasts, Kes, Kis, Es, Is):
+
+            contrastCounter = 0
+            Rs = []
+            for contrast in contrasts:
+
+                sizeCounter = 0
+                for size in sizes:
+                    R = (Kes[contrastCounter] * Es[sizeCounter]) / (1 + Kis[contrastCounter]*Is[sizeCounter])
+                    Rs.append(R)
+
+                    sizeCounter = sizeCounter + 1
+
+                contrastCounter = contrastCounter + 1
+
+            return Rs
+
+
         def spatialSuppressionMechanisticModel(sizesXcontrast, Ae, Ai, alpha, beta,  c50e, c50i, ne, ni):
 
             sizes, contrasts = sizesXcontrast
+
+            Kes, Kis = calcCRF(contrasts, Ae, Ai, c50e, c50i, ne, ni)
+
+            Es, Is = calcSRF(sizes, alpha, beta)
+
+            Rs = calcSurroundSuppression(sizes, contrasts, Kes, Kis, Es, Is)
+
 
             Rs = []
             for size in sizes:
@@ -220,36 +276,36 @@ def fitSurroundSuppression(subjectID, **kwargs):
     plt.xticks(np.log(sizes), sizes)
     plt.legend()
 
-    text = 'Excitatory Center:\n\
-    - alpha:   ' + str(round(alpha_fit,3)) + '   (' + str(alpha_ll) + ', ' + str(alpha_ul) + ')\n\
-    - ne:      ' + str(round(ne_fit,3)) + '   (' + str(ne_ll) + ', ' + str(ne_ul) + ')\n\
-    - c50e:    ' + str(round(c50e_fit,3)) + '   (' + str(c50e_ll) + ', ' + str(c50e_ul) + ')\n\
-    - Ae:      ' + str(round(Ae_fit,3)) + '   (' + str(Ae_ll) + ', ' + str(Ae_ul) + ')\n\
-Inhibitory Surround:\n\
-    - beta:    ' + str(round(beta_fit,3)) + '   (' + str(beta_ll) + ', ' + str(beta_ul) + ')\n\
-    - ni:      ' + str(round(ni_fit,3)) + '   (' + str(ni_ll) + ', ' + str(ni_ul) + ')\n\
-    - c50i:    ' + str(round(c50i_fit,3)) + '   (' + str(c50i_ll) + ', ' + str(c50i_ul) + ')\n\
-    - Ai:      ' + str(round(Ai_fit,3)) + '   (' + str(Ai_ll) + ', ' + str(Ai_ul) + ')\n'
+#    text = 'Excitatory Center:\n\
+#    - alpha:   ' + str(round(alpha_fit,3)) + '   (' + str(alpha_ll) + ', ' + str(alpha_ul) + ')\n\
+#    - ne:      ' + str(round(ne_fit,3)) + '   (' + str(ne_ll) + ', ' + str(ne_ul) + ')\n\
+#    - c50e:    ' + str(round(c50e_fit,3)) + '   (' + str(c50e_ll) + ', ' + str(c50e_ul) + ')\n\
+#    - Ae:      ' + str(round(Ae_fit,3)) + '   (' + str(Ae_ll) + ', ' + str(Ae_ul) + ')\n\
+#Inhibitory Surround:\n\
+#    - beta:    ' + str(round(beta_fit,3)) + '   (' + str(beta_ll) + ', ' + str(beta_ul) + ')\n\
+#    - ni:      ' + str(round(ni_fit,3)) + '   (' + str(ni_ll) + ', ' + str(ni_ul) + ')\n\
+#    - c50i:    ' + str(round(c50i_fit,3)) + '   (' + str(c50i_ll) + ', ' + str(c50i_ul) + ')\n\
+#    - Ai:      ' + str(round(Ai_fit,3)) + '   (' + str(Ai_ll) + ', ' + str(Ai_ul) + ')\n'
 
-    text1 = 'Excitatory Center:\n\
-    - alpha:   ' + str(round(alpha_fit, 3)) + '   (' + str(alpha_ll) + ', ' + str(alpha_ul) + ')\n\
-    - ne:        ' + str(round(ne_fit, 3)) + '   (' + str(ne_ll) + ', ' + str(ne_ul) + ')\n\
-    - c50e:    ' + str(round(c50e_fit, 3)) + '   (' + str(c50e_ll) + ', ' + str(c50e_ul) + ')\n\
-    - Ae:        ' + str(round(Ae_fit, 3)) + '   (' + str(Ae_ll) + ', ' + str(Ae_ul) + ')\n'
-    text2 = 'Inhibitory Surround:\n\
-    - beta:    ' + str(round(beta_fit, 3)) + '   (' + str(beta_ll) + ', ' + str(beta_ul) + ')\n\
-    - ni:        ' + str(round(ni_fit, 3)) + '   (' + str(ni_ll) + ', ' + str(ni_ul) + ')\n\
-    - c50i:    ' + str(round(c50i_fit, 3)) + '   (' + str(c50i_ll) + ', ' + str(c50i_ul) + ')\n\
-    - Ai:        ' + str(round(Ai_fit, 3)) + '   (' + str(Ai_ll) + ', ' + str(Ai_ul) + ')\n'
+#    text1 = 'Excitatory Center:\n\
+#    - alpha:   ' + str(round(alpha_fit, 3)) + '   (' + str(alpha_ll) + ', ' + str(alpha_ul) + ')\n\
+#    - ne:        ' + str(round(ne_fit, 3)) + '   (' + str(ne_ll) + ', ' + str(ne_ul) + ')\n\
+#    - c50e:    ' + str(round(c50e_fit, 3)) + '   (' + str(c50e_ll) + ', ' + str(c50e_ul) + ')\n\
+#    - Ae:        ' + str(round(Ae_fit, 3)) + '   (' + str(Ae_ll) + ', ' + str(Ae_ul) + ')\n'
+#    text2 = 'Inhibitory Surround:\n\
+#    - beta:    ' + str(round(beta_fit, 3)) + '   (' + str(beta_ll) + ', ' + str(beta_ul) + ')\n\
+#    - ni:        ' + str(round(ni_fit, 3)) + '   (' + str(ni_ll) + ', ' + str(ni_ul) + ')\n\
+#    - c50i:    ' + str(round(c50i_fit, 3)) + '   (' + str(c50i_ll) + ', ' + str(c50i_ul) + ')\n\
+#    - Ai:        ' + str(round(Ai_fit, 3)) + '   (' + str(Ai_ll) + ', ' + str(Ai_ul) + ')\n'#
 
 
 
 
     #plt.text(np.log(sizes[0]), -0.2, text1, ha='left')
-    plt.figtext(0.1, -0.2, text1, ha='left')
+#    plt.figtext(0.1, -0.2, text1, ha='left')
 
     #plt.text((np.log(sizes[-1])+np.log(sizes[0]))/2, -0.2, text2, ha='left')
-    plt.figtext(0.6, -0.2, text2, ha='left')
+#    plt.figtext(0.6, -0.2, text2, ha='left')
 
 
     savePathRoot = os.path.expanduser('~') + '/Desktop/surroundSuppressionPTHA/analysis/'
@@ -257,7 +313,7 @@ Inhibitory Surround:\n\
 
     contrastsString = ",".join(str(x) for x in contrasts)
     sizesString = ",".join(str(x) for x in sizes)
-    plt.savefig(savePath + 'R2' + str(r2) + '_C' + contrastsString + '_S' + sizesString + '_pooled_TadinFit.png', bbox_inches="tight")
+    plt.savefig(savePath + 'C' + contrastsString + '_S' + sizesString + '_'+subjectID+'_tadinFit.png', bbox_inches="tight")
     plt.close()
 
 
@@ -319,7 +375,7 @@ Inhibitory Surround:\n\
 #fitTadin(sizes, peaks, contrasts)
 #sizes = targetRadii
 
-fitSurroundSuppression('controls', contrasts=[2, 99])
+fitSurroundSuppression('controls', contrasts=[2])
 
 
 #print('end')

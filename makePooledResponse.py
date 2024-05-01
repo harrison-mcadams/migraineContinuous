@@ -8,7 +8,7 @@ def makePooledResponse(loadBehavior):
     import os
     import matplotlib.pyplot as plt
 
-    import makeSubjectList.py
+    import makeSubjectList
 
     basicTrialParams = getExperimentParams.getExperimentParams('horizontalContinuous')
 
@@ -23,7 +23,7 @@ def makePooledResponse(loadBehavior):
     comparison = 'targetXVelocities-mouseXVelocities'
 
     savePathRoot = os.path.expanduser('~') + '/Desktop/surroundSuppressionPTHA/analysis/'
-    savePath = savePathRoot + '/' + 'horizontalContinuous' + '/meanResponses/pooled/'
+    savePath = savePathRoot + '/' + 'horizontalContinuous' + '/correlograms/pooled/'
 
     subjectIDs = glob.glob(os.path.expanduser('~') + '/Desktop/surroundSuppressionPTHA/data/horizontalContinuous/SS*')
     subjectIDs = [os.path.basename(x) for x in subjectIDs]
@@ -42,10 +42,15 @@ def makePooledResponse(loadBehavior):
 
         for subjectID in subjectIDs:
 
-            peaks, contrasts, targetRadii = analyzeTadin.analyzeTadin(subjectID, inputtedContrasts, inputtedTargetRadii, comparison, load)
+            if subjectID == 'SS_1422' or subjectID == 'SS_001':
+                test='do nothing'
+            else:
 
-            peaks_2.append(peaks['Contrast2'])
-            peaks_99.append(peaks['Contrast99'])
+                stats, correlograms = analyzeTadin.analyzeTadin(subjectID)
+
+
+                peaks_2.append([stats['peak']['Contrast2']['Size1.5'], stats['peak']['Contrast2']['Size3'], stats['peak']['Contrast2']['Size6'], stats['peak']['Contrast2']['Size12']])
+                peaks_99.append([stats['peak']['Contrast99']['Size1.5'], stats['peak']['Contrast99']['Size3'], stats['peak']['Contrast99']['Size6'], stats['peak']['Contrast99']['Size12']])
 
         groupMean_peaks_2 = np.mean(peaks_2, 0)
         groupMean_peaks_99 = np.mean(peaks_99, 0)
@@ -59,12 +64,13 @@ def makePooledResponse(loadBehavior):
                      label='Contrast: ' + str(99))
 
 
-        plt.xticks(np.log(targetRadii*2), targetRadii*2)
+        plt.xticks(np.log(inputtedTargetRadii*2), inputtedTargetRadii*2)
         plt.xlabel('Stimulus Size (degrees)')
         plt.ylabel('Kernel Peak (r)')
         plt.legend()
         plt.ylim([-0.025, 0.25])
         plt.savefig(savePath + 'pooled_CRF_peaks.png')
+        plt.close()
 
 
         pooledPeaks = {'Contrast2': groupMean_peaks_2}
@@ -76,8 +82,8 @@ def makePooledResponse(loadBehavior):
         results = {
                     'peaks': pooledPeaks,
                     'peaksSEM': pooledPeaksSEM,
-                    'contrasts': contrasts,
-                    'targetRadii': targetRadii
+                    'contrasts': inputtedContrasts,
+                    'targetRadii': inputtedTargetRadii
                 }
 
 

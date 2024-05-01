@@ -153,6 +153,8 @@ def fitSurroundSuppression(subjectID, **kwargs):
             Is = []
             for size in sizes:
 
+                    size = np.log(size)
+
                     E = 1-np.e**(-((size**2)/(alpha**2))/2)
                     Es.append(E)
 
@@ -165,16 +167,19 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
             contrastCounter = 0
             Rs = []
-            for contrast in contrasts:
 
-                sizeCounter = 0
-                for size in sizes:
+            sizeCounter = 0
+            for size in sizes:
+
+                contrastCounter = 0
+                for contrast in contrasts:
+
                     R = (Kes[contrastCounter] * Es[sizeCounter]) / (1 + Kis[contrastCounter]*Is[sizeCounter])
                     Rs.append(R)
 
-                    sizeCounter = sizeCounter + 1
 
-                contrastCounter = contrastCounter + 1
+                    contrastCounter = contrastCounter + 1
+                sizeCounter = sizeCounter + 1
 
             return Rs
 
@@ -190,25 +195,6 @@ def fitSurroundSuppression(subjectID, **kwargs):
             Rs = calcSurroundSuppression(sizes, contrasts, Kes, Kis, Es, Is)
 
 
-            Rs = []
-            for size in sizes:
-                for contrast in contrasts:
-
-                    if contrast > 1:
-                        contrast = contrast/100
-
-                    E = 1-np.e**(-((size**2)/(alpha**2))/2)
-                    I = 1-np.e**(-((size**2)/(beta**2))/2)
-
-                    Ke = Ae * contrast**ne/((contrast)**ne + c50e**ne)
-                    Ki = Ai * contrast**ni/((contrast)**ni + c50i**ni)
-
-                    #R = C*(Ke * E)/(1+Ki*I) + R0
-                    #R = C*(Ke * E) - Ki*I + R0
-
-                    R = (Ke * E) / (1 + Ki * I)
-
-                    Rs.append(R)
 
             return np.array(Rs)
 
@@ -232,6 +218,15 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
         #[alpha0, beta1, Ae2, Ai3, ne4, ni5, c50e6, c50i7, R0, C]
 
+        fittedParams = {'Ae': popt[2],
+            'Ai': popt[3],
+            'alpha': popt[0],
+            'beta': popt[1],
+            'c50e': popt[6],
+            'c50i': popt[7],
+            'ne': popt[4],
+            'ni': popt[5]}
+
         Ae_fit = popt[2]
         Ai_fit = popt[3]
         alpha_fit = popt[0]
@@ -247,7 +242,7 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
     y_pred_veridical = spatialSuppressionMechanisticModel((sizes_vector,contrasts_vector), *popt)
 
-#    r2 = r2_score(peaks_vector, y_pred_veridical)
+    r2 = r2_score(peaks_vector2, y_pred_veridical)
 
 
 
@@ -274,39 +269,10 @@ def fitSurroundSuppression(subjectID, **kwargs):
     plt.xlim([np.log(sizes[0]) - np.log(1.1), np.log(sizes[-1]) + np.log(1.1)])
     plt.ylim([-0, 0.25])
     plt.xticks(np.log(sizes), sizes)
+    plt.xlabel('Stimulus Size (degrees)')
+    plt.ylabel(summaryStatistic)
     plt.legend()
-
-#    text = 'Excitatory Center:\n\
-#    - alpha:   ' + str(round(alpha_fit,3)) + '   (' + str(alpha_ll) + ', ' + str(alpha_ul) + ')\n\
-#    - ne:      ' + str(round(ne_fit,3)) + '   (' + str(ne_ll) + ', ' + str(ne_ul) + ')\n\
-#    - c50e:    ' + str(round(c50e_fit,3)) + '   (' + str(c50e_ll) + ', ' + str(c50e_ul) + ')\n\
-#    - Ae:      ' + str(round(Ae_fit,3)) + '   (' + str(Ae_ll) + ', ' + str(Ae_ul) + ')\n\
-#Inhibitory Surround:\n\
-#    - beta:    ' + str(round(beta_fit,3)) + '   (' + str(beta_ll) + ', ' + str(beta_ul) + ')\n\
-#    - ni:      ' + str(round(ni_fit,3)) + '   (' + str(ni_ll) + ', ' + str(ni_ul) + ')\n\
-#    - c50i:    ' + str(round(c50i_fit,3)) + '   (' + str(c50i_ll) + ', ' + str(c50i_ul) + ')\n\
-#    - Ai:      ' + str(round(Ai_fit,3)) + '   (' + str(Ai_ll) + ', ' + str(Ai_ul) + ')\n'
-
-#    text1 = 'Excitatory Center:\n\
-#    - alpha:   ' + str(round(alpha_fit, 3)) + '   (' + str(alpha_ll) + ', ' + str(alpha_ul) + ')\n\
-#    - ne:        ' + str(round(ne_fit, 3)) + '   (' + str(ne_ll) + ', ' + str(ne_ul) + ')\n\
-#    - c50e:    ' + str(round(c50e_fit, 3)) + '   (' + str(c50e_ll) + ', ' + str(c50e_ul) + ')\n\
-#    - Ae:        ' + str(round(Ae_fit, 3)) + '   (' + str(Ae_ll) + ', ' + str(Ae_ul) + ')\n'
-#    text2 = 'Inhibitory Surround:\n\
-#    - beta:    ' + str(round(beta_fit, 3)) + '   (' + str(beta_ll) + ', ' + str(beta_ul) + ')\n\
-#    - ni:        ' + str(round(ni_fit, 3)) + '   (' + str(ni_ll) + ', ' + str(ni_ul) + ')\n\
-#    - c50i:    ' + str(round(c50i_fit, 3)) + '   (' + str(c50i_ll) + ', ' + str(c50i_ul) + ')\n\
-#    - Ai:        ' + str(round(Ai_fit, 3)) + '   (' + str(Ai_ll) + ', ' + str(Ai_ul) + ')\n'#
-
-
-
-
-    #plt.text(np.log(sizes[0]), -0.2, text1, ha='left')
-#    plt.figtext(0.1, -0.2, text1, ha='left')
-
-    #plt.text((np.log(sizes[-1])+np.log(sizes[0]))/2, -0.2, text2, ha='left')
-#    plt.figtext(0.6, -0.2, text2, ha='left')
-
+    plt.title('R2 = '+str(round(r2,4)))
 
     savePathRoot = os.path.expanduser('~') + '/Desktop/surroundSuppressionPTHA/analysis/'
     savePath = savePathRoot + '/' + 'horizontalContinuous' + '/modelFits/'
@@ -375,7 +341,7 @@ def fitSurroundSuppression(subjectID, **kwargs):
 #fitTadin(sizes, peaks, contrasts)
 #sizes = targetRadii
 
-fitSurroundSuppression('controls', contrasts=[2])
+fitSurroundSuppression('controls', contrasts=[99])
 
 
 #print('end')

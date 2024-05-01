@@ -157,7 +157,7 @@ def fitTadin(sizes, peaks, contrasts, peaksSEM, startingParams, paramULs, paramL
     for contrast in contrasts:
         plt.plot(np.log(predictionSizes), y_pred[:,counter], color='red')
         #plt.plot(np.log(sizes), peaks['Contrast'+str(contrast)], label=str(contrast)+'%')
-        plt.errorbar(np.log(sizes), peaks['Contrast' + str(contrast)], peaksSEM['Contrast' + str(contrast)],
+        plt.errorbar(np.log(sizes[0:4]), peaks['Contrast' + str(contrast)], peaksSEM['Contrast' + str(contrast)],
                      label='Contrast: ' + str(contrast), ls='none')
 
         counter = counter+1

@@ -1,4 +1,4 @@
-def makeGroupResponse(loadBehavior):
+def makeGroupResponse(**kwargs):
 
     import numpy as np
     import analyzeTadin as analyzeTadin
@@ -14,6 +14,10 @@ def makeGroupResponse(loadBehavior):
     basicTrialParams = getExperimentParams.getExperimentParams('horizontalContinuous')
 
 
+    if 'loadBehavior' in kwargs:
+        loadBehavior = kwargs['loadBehavior']
+    else:
+        loadBehavior = True
     load = loadBehavior
 
     sizes = [1.5, 3, 6, 12]
@@ -41,6 +45,8 @@ def makeGroupResponse(loadBehavior):
         with open(savePath + 'C' + contrastsString + '_S' + sizesString + '_pooledResults.pkl', 'rb') as f:
             results = pickle.load(f)
 
+        summaryResults = results['summaryResults']
+        pooledResults = results['pooledResults']
     else:
 
 
@@ -171,4 +177,4 @@ def makeGroupResponse(loadBehavior):
     return summaryResults, pooledResults
 
 
-makeGroupResponse(False)
+#makeGroupResponse(False)

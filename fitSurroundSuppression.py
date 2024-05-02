@@ -49,6 +49,9 @@ def fitSurroundSuppression(subjectID, **kwargs):
     import os
     import makeGroupResponse
     import analyzeTadin
+    import makeStruct
+
+    from matplotlib.widgets import Button, Slider
 
     if 'skipC2S15' in kwargs:
         skipC2S15 = kwargs['skipC2S15']
@@ -246,9 +249,11 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
     r2 = r2_score(peaks_vector2, y_pred_veridical)
 
+    fig, axes = plt.subplots(1, 3)
 
-
+    axes_ss = axes[0]
     counter = 0
+    ss = makeStruct.makeStruct([contrasts])
     for contrast in contrasts:
 
         meanVector = []
@@ -257,11 +262,11 @@ def fitSurroundSuppression(subjectID, **kwargs):
             meanVector.append(stats['mean']['Contrast'+str(contrast)]['Size'+str(size)])
             SEMVector.append(stats['SEM']['Contrast'+str(contrast)]['Size'+str(size)])
 
-        fig, (ax1, ax2, ax3) = plt.subplots(1,3)
 
-        ax1.plot(np.log(predictionSizes), y_pred[:,counter], color='red')
+
+        ss[str(contrast)], = axes_ss.plot(np.log(predictionSizes), y_pred[:,counter], color='red')
         #plt.plot(np.log(sizes), meanVector, label=str(contrast)+'%')
-        ax1.errorbar(np.log(sizes), meanVector, SEMVector,
+        axes_ss.errorbar(np.log(sizes), meanVector, SEMVector,
                      label='Contrast: ' + str(contrast), ls='none')
 
         counter = counter+1
@@ -269,35 +274,37 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
 
  #   plt.plot(np.log(sizes), peaks['Contrast0.07'])
-    ax1.set_xlim([np.log(sizes[0]) - np.log(1.1), np.log(sizes[-1]) + np.log(1.1)])
-    ax1.set_ylim([-0, 0.25])
-    ax1.set_xticks(np.log(sizes), sizes)
-    ax1.set_xlabel('Stimulus Size (degrees)')
-    ax1.set_ylabel(summaryStatistic)
-    ax1.legend()
-    ax1.set_title('R2 = '+str(round(r2,4)))
+    axes_ss.set_xlim([np.log(sizes[0]) - np.log(1.1), np.log(sizes[-1]) + np.log(1.1)])
+    axes_ss.set_ylim([-0, 0.25])
+    axes_ss.set_xticks(np.log(sizes), sizes)
+    axes_ss.set_xlabel('Stimulus Size (degrees)')
+    axes_ss.set_ylabel(summaryStatistic)
+    axes_ss.legend()
+    axes_ss.set_title('R2 = '+str(round(r2,4)))
 
     # Plot the SRF
-    ax2.set_title('Size Response Function')
+    axes_srf = axes[1]
+    axes_srf.set_title('Size Response Function')
     Es, Is = calcSRF(predictionSizes, fittedParams['alpha'], fittedParams['beta'])
-    ax2.plot(predictionSizes, Es, label='E')
-    ax2.plot(predictionSizes, Is, label='I')
-    ax2.set_xlim([np.log(sizes[0]) - np.log(1.1), np.log(sizes[-1]) + np.log(1.1)])
-    ax2.set_xticks(np.log(sizes), sizes)
-    ax2.set_xlabel('Stimulus Size (degrees)')
-    ax2.legend()
+    srf_e, = axes_srf.plot(predictionSizes, Es, label='E')
+    srf_i, = axes_srf.plot(predictionSizes, Is, label='I')
+    axes_srf.set_xlim([np.log(sizes[0]) - np.log(1.1), np.log(sizes[-1]) + np.log(1.1)])
+    axes_srf.set_xticks(np.log(sizes), sizes)
+    axes_srf.set_xlabel('Stimulus Size (degrees)')
+    axes_srf.legend()
 
     # Plot the CRF
-    ax3.set_title('Contrast Response Function')
+    axes_crf = axes[2]
+    axes_crf.set_title('Contrast Response Function')
     predictionContrasts = np.linspace(0, 100, 10000)
 
     Kes, Kis = calcCRF(predictionContrasts, fittedParams['Ae'], fittedParams['Ai'], fittedParams['c50e'], fittedParams['c50i'], fittedParams['ne'], fittedParams['ni'])
-    ax3.plot(predictionContrasts, Kes, label='Ke')
-    ax3.plot(predictionContrasts, Kis, label='Ki')
-    ax3.set_xlim([-5, 105])
-    ax3.set_xticks([0, 50, 100])
-    ax3.set_xlabel('Stimulus Contrast')
-    ax3.legend()
+    axes_crf.plot(predictionContrasts, Kes, label='Ke')
+    axes_crf.plot(predictionContrasts, Kis, label='Ki')
+    axes_crf.set_xlim([-5, 105])
+    axes_crf.set_xticks([0, 50, 100])
+    axes_crf.set_xlabel('Stimulus Contrast')
+    axes_crf.legend()
 
     savePathRoot = os.path.expanduser('~') + '/Desktop/surroundSuppressionPTHA/analysis/'
     savePath = savePathRoot + '/' + 'horizontalContinuous' + '/modelFits/'
@@ -306,12 +313,67 @@ def fitSurroundSuppression(subjectID, **kwargs):
     sizesString = ",".join(str(x) for x in sizes)
     fig.set_figwidth(13)
 
+    y_adjustment = 0.25
+    fig.subplots_adjust(bottom=y_adjustment)
+
+
+    axis_ss_position = axes_ss.get_position()
+    axis_srf_position = axes_srf.get_position()
+    axis_crf_position = axes_crf.get_position()
+
+    axis_slider = fig.add_axes([axis_srf_position.x0, 0, axis_srf_position.x1-axis_srf_position.x0, y_adjustment])
+
+
+    alpha_slider = Slider(
+        ax=axis_slider,
+        label="Alpha",
+        valmin=params['alpha'][0],
+        valmax=params['alpha'][2],
+        valinit=fittedParams['alpha'],
+        orientation="horizontal"
+    )
+
+    #axes[1][0]
+
+    # The function to be called anytime a slider's value changes
+    def update(val):
+
+        Kes, Kis = calcSRF(predictionSizes, alpha_slider.val, fittedParams['beta'])
+
+        Rs = spatialSuppressionMechanisticModel((predictionSizes, contrasts), fittedParams['Ae'], fittedParams['Ai'],
+                                                alpha_slider.val, fittedParams['beta'], fittedParams['c50e'],
+                                                fittedParams['c50i'], fittedParams['ne'], fittedParams['ni'])
+
+        Rs = Rs.reshape(len(predictionSizes), len(contrasts))
+
+        srf_e.set_ydata(Kes)
+        contrastCounter = 0
+        for contrast in contrasts:
+            ss[str(contrast)].set_ydata(Rs[:, contrastCounter])
+            contrastCounter = contrastCounter + 1
+
+        fig.canvas.draw_idle()
+
+    # register the update function with each slider
+    alpha_slider.on_changed(update)
+
+    # Create a `matplotlib.widgets.Button` to reset the sliders to initial values.
+    resetax = fig.add_axes([0.8, 0.025, 0.1, 0.04])
+    button = Button(resetax, 'Reset', hovercolor='0.975')
+
+    def reset(event):
+        alpha_slider.reset()
+
+    button.on_clicked(reset)
+
+    plt.show()
+
     fig.savefig(savePath + 'C' + contrastsString + '_S' + sizesString + '_'+subjectID+'_tadinFit.png', bbox_inches="tight")
     fig.close()
 
 
 
-fitSurroundSuppression('controls', contrasts=[99])
+fitSurroundSuppression('controls', contrasts=[2, 99])
 
 
 #print('end')

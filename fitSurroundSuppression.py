@@ -133,10 +133,15 @@ def fitSurroundSuppression(subjectID, **kwargs):
             'Ai': [0, 100, 1000],
             'alpha': [0,1,10],
             'beta': [0,3,10],
-            'c50e': [0, 0.1, 1],
-            'c50i': [0, 0.1, 1],
+            'c50e': [0, 0.1, 2],
+            'c50i': [0, 0.1, 2],
             'ne': [0, 3, 7],
             'ni': [0, 5, 7]}
+
+        SRFParamLabels = ['alpha', 'beta']
+        CRFParamLabels = ['Ae', 'Ai', 'c50e', 'c50i', 'ne', 'ni']
+
+        nLongestParamList = max([len(SRFParamLabels), len(CRFParamLabels)])
 
 
         def calcCRF(contrasts, Ae, Ai, c50e, c50i, ne, ni):
@@ -299,8 +304,8 @@ def fitSurroundSuppression(subjectID, **kwargs):
     predictionContrasts = np.linspace(0, 100, 10000)
 
     Kes, Kis = calcCRF(predictionContrasts, fittedParams['Ae'], fittedParams['Ai'], fittedParams['c50e'], fittedParams['c50i'], fittedParams['ne'], fittedParams['ni'])
-    axes_crf.plot(predictionContrasts, Kes, label='Ke')
-    axes_crf.plot(predictionContrasts, Kis, label='Ki')
+    crf_Kes, = axes_crf.plot(predictionContrasts, Kes, label='Ke')
+    crf_Kis, = axes_crf.plot(predictionContrasts, Kis, label='Ki')
     axes_crf.set_xlim([-5, 105])
     axes_crf.set_xticks([0, 50, 100])
     axes_crf.set_xlabel('Stimulus Contrast')
@@ -313,7 +318,7 @@ def fitSurroundSuppression(subjectID, **kwargs):
     sizesString = ",".join(str(x) for x in sizes)
     fig.set_figwidth(13)
 
-    y_adjustment = 0.25
+    y_adjustment = 0.5
     fig.subplots_adjust(bottom=y_adjustment)
 
 
@@ -321,32 +326,78 @@ def fitSurroundSuppression(subjectID, **kwargs):
     axis_srf_position = axes_srf.get_position()
     axis_crf_position = axes_crf.get_position()
 
-    axis_slider = fig.add_axes([axis_srf_position.x0, 0, axis_srf_position.x1-axis_srf_position.x0, y_adjustment])
+    # Make SRF sliders
+    SRFSliders = makeStruct.makeStruct([SRFParamLabels])
+    SRFSliderAxes = makeStruct.makeStruct([SRFParamLabels])
+    counter = 0
+
+    nSRFSliders = len(SRFParamLabels)
+    SRFY_adjustment = (y_adjustment-0.1)/nSRFSliders
+
+    for SRFParamLabel in SRFParamLabels:
 
 
-    alpha_slider = Slider(
-        ax=axis_slider,
-        label="Alpha",
-        valmin=params['alpha'][0],
-        valmax=params['alpha'][2],
-        valinit=fittedParams['alpha'],
+        SRFSliderAxes[SRFParamLabel] = fig.add_axes([axis_srf_position.x0, counter*SRFY_adjustment, axis_srf_position.x1-axis_srf_position.x0, SRFY_adjustment])
+
+        counter = counter + 1
+
+        SRFSliders[SRFParamLabel] = Slider(
+        ax=SRFSliderAxes[SRFParamLabel],
+        label=SRFParamLabel,
+        valmin=params[SRFParamLabel][0],
+        valmax=params[SRFParamLabel][2],
+        valinit=fittedParams[SRFParamLabel],
         orientation="horizontal"
     )
+
+    # Make SRF sliders
+    CRFSliders = makeStruct.makeStruct([CRFParamLabels])
+    CRFSliderAxes = makeStruct.makeStruct([CRFParamLabels])
+    counter = 0
+
+    nCRFSliders = len(CRFParamLabels)
+    CRFY_adjustment = (y_adjustment - 0.1) / nCRFSliders
+
+    for CRFParamLabel in CRFParamLabels:
+        CRFSliderAxes[CRFParamLabel] = fig.add_axes(
+            [axis_crf_position.x0, counter * CRFY_adjustment, axis_crf_position.x1 - axis_crf_position.x0,
+             CRFY_adjustment])
+
+        counter = counter + 1
+
+        CRFSliders[CRFParamLabel] = Slider(
+            ax=CRFSliderAxes[CRFParamLabel],
+            label=CRFParamLabel,
+            valmin=params[CRFParamLabel][0],
+            valmax=params[CRFParamLabel][2],
+            valinit=fittedParams[CRFParamLabel],
+            orientation="horizontal"
+        )
 
     #axes[1][0]
 
     # The function to be called anytime a slider's value changes
     def update(val):
 
-        Kes, Kis = calcSRF(predictionSizes, alpha_slider.val, fittedParams['beta'])
+        Es, Is = calcSRF(predictionSizes, SRFSliders['alpha'].val, SRFSliders['beta'].val)
 
-        Rs = spatialSuppressionMechanisticModel((predictionSizes, contrasts), fittedParams['Ae'], fittedParams['Ai'],
-                                                alpha_slider.val, fittedParams['beta'], fittedParams['c50e'],
-                                                fittedParams['c50i'], fittedParams['ne'], fittedParams['ni'])
+        Kes, Kis = calcCRF(predictionContrasts, CRFSliders['Ae'].val, CRFSliders['Ai'].val, CRFSliders['c50e'].val,
+                           CRFSliders['c50i'].val, CRFSliders['ne'].val, CRFSliders['ni'].val)
+
+        Rs = spatialSuppressionMechanisticModel((predictionSizes, contrasts), CRFSliders['Ae'].val, CRFSliders['Ai'].val,
+                                                SRFSliders['alpha'].val, SRFSliders['beta'].val, CRFSliders['c50e'].val,
+                                                CRFSliders['c50i'].val, CRFSliders['ne'].val, CRFSliders['ni'].val)
 
         Rs = Rs.reshape(len(predictionSizes), len(contrasts))
 
-        srf_e.set_ydata(Kes)
+        srf_e.set_ydata(Es)
+        srf_i.set_ydata(Is)
+
+        crf_Kes.set_ydata(Kes)
+        crf_Kis.set_ydata(Kis)
+
+
+
         contrastCounter = 0
         for contrast in contrasts:
             ss[str(contrast)].set_ydata(Rs[:, contrastCounter])
@@ -355,14 +406,22 @@ def fitSurroundSuppression(subjectID, **kwargs):
         fig.canvas.draw_idle()
 
     # register the update function with each slider
-    alpha_slider.on_changed(update)
+    for SRFParamLabel in SRFParamLabels:
+        SRFSliders[SRFParamLabel].on_changed(update)
+
+    for CRFParamLabel in CRFParamLabels:
+        CRFSliders[CRFParamLabel].on_changed(update)
 
     # Create a `matplotlib.widgets.Button` to reset the sliders to initial values.
-    resetax = fig.add_axes([0.8, 0.025, 0.1, 0.04])
+    resetax = fig.add_axes([0.1, 0.025, 0.1, 0.04])
     button = Button(resetax, 'Reset', hovercolor='0.975')
 
     def reset(event):
-        alpha_slider.reset()
+        for SRFParamLabel in SRFParamLabels:
+            SRFSliders[SRFParamLabel].reset()
+
+        for CRFParamLabel in CRFParamLabels:
+            CRFSliders[CRFParamLabel].reset()
 
     button.on_clicked(reset)
 

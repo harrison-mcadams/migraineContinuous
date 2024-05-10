@@ -136,9 +136,11 @@ def fitSurroundSuppression(subjectID, **kwargs):
             'c50e': [0, 0.1, 2],
             'c50i': [0, 0.1, 2],
             'ne': [0, 3, 7],
-            'ni': [0, 5, 7]}
+            'ni': [0, 5, 7],
+            'criterion': [1,2000,10000],
+                  'R0': [0,6,100]}
 
-        SRFParamLabels = ['alpha', 'beta']
+        SRFParamLabels = ['alpha', 'beta', 'criterion', 'R0']
         CRFParamLabels = ['Ae', 'Ai', 'c50e', 'c50i', 'ne', 'ni']
 
         nLongestParamList = max([len(SRFParamLabels), len(CRFParamLabels)])
@@ -178,28 +180,36 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
             return Es, Is
 
-        def calcSurroundSuppression(sizes, contrasts, Kes, Kis, Es, Is):
+        def calcSurroundSuppression(sizes, contrasts, Kes, Kis, Es, Is, criterion, R0):
 
-            contrastCounter = 0
-            Rs = []
-
-            sizeCounter = 0
-            for size in sizes:
-
+            if model == 'tadin':
                 contrastCounter = 0
-                for contrast in contrasts:
+                Rs = []
 
-                    R = (Kes[contrastCounter] * Es[sizeCounter]) / (1 + Kis[contrastCounter]*Is[sizeCounter])
-                    Rs.append(R)
+                sizeCounter = 0
+                for size in sizes:
+
+                    contrastCounter = 0
+                    for contrast in contrasts:
+
+                        R = (Kes[contrastCounter] * Es[sizeCounter]) / (1 + Kis[contrastCounter]*Is[sizeCounter])
+
+                        if summaryStatistic == 'lags':
+
+                            threshold = criterion/(R + R0)
+
+                            R = threshold
+
+                        Rs.append(R)
 
 
-                    contrastCounter = contrastCounter + 1
-                sizeCounter = sizeCounter + 1
+                        contrastCounter = contrastCounter + 1
+                    sizeCounter = sizeCounter + 1
 
             return Rs
 
 
-        def spatialSuppressionMechanisticModel(sizesXcontrast, Ae, Ai, alpha, beta,  c50e, c50i, ne, ni):
+        def spatialSuppressionMechanisticModel(sizesXcontrast, Ae, Ai, alpha, beta,  c50e, c50i, ne, ni, criterion, R0):
 
             sizes, contrasts = sizesXcontrast
 
@@ -207,7 +217,9 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
             Es, Is = calcSRF(sizes, alpha, beta)
 
-            Rs = calcSurroundSuppression(sizes, contrasts, Kes, Kis, Es, Is)
+            Rs = calcSurroundSuppression(sizes, contrasts, Kes, Kis, Es, Is, criterion, R0)
+
+
 
 
 
@@ -240,7 +252,9 @@ def fitSurroundSuppression(subjectID, **kwargs):
             'c50e': popt[4],
             'c50i': popt[5],
             'ne': popt[6],
-            'ni': popt[7]}
+            'ni': popt[7],
+            'criterion': popt[8],
+            'R0': popt[9]}
 
 
     predictionSizes = np.array(range(int(np.ceil(sizes[-1]*1.5*1000))))/1000
@@ -280,7 +294,13 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
  #   plt.plot(np.log(sizes), peaks['Contrast0.07'])
     axes_ss.set_xlim([np.log(sizes[0]) - np.log(1.1), np.log(sizes[-1]) + np.log(1.1)])
-    axes_ss.set_ylim([-0, 0.25])
+
+    yLims = {'peaks': [-0.025, 0.25],
+             'correlograms': [-0.025, 0.25],
+             'widths': [0, 500],
+             'lags': [0, 750]}
+    axes_ss.set_ylim(yLims[summaryStatistic])
+
     axes_ss.set_xticks(np.log(sizes), sizes)
     axes_ss.set_xlabel('Stimulus Size (degrees)')
     axes_ss.set_ylabel(summaryStatistic)
@@ -386,7 +406,7 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
         Rs = spatialSuppressionMechanisticModel((predictionSizes, contrasts), CRFSliders['Ae'].val, CRFSliders['Ai'].val,
                                                 SRFSliders['alpha'].val, SRFSliders['beta'].val, CRFSliders['c50e'].val,
-                                                CRFSliders['c50i'].val, CRFSliders['ne'].val, CRFSliders['ni'].val)
+                                                CRFSliders['c50i'].val, CRFSliders['ne'].val, CRFSliders['ni'].val, SRFSliders['criterion'].val, SRFSliders['R0'].val)
 
         Rs = Rs.reshape(len(predictionSizes), len(contrasts))
 
@@ -432,7 +452,7 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
 
 
-fitSurroundSuppression('controls', contrasts=[2, 99])
+fitSurroundSuppression('controls', contrasts=[2, 99], skipC2S15=True, summaryStatistic='lags')
 
 
 #print('end')

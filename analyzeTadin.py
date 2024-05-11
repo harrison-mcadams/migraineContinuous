@@ -233,6 +233,25 @@ def analyzeTadin(subjectID, **kwargs):
         plt.close()
 
         for cc in contrasts:
+            if cc == 2:
+                plt.errorbar(np.log(targetRadii_forOperating[1:] * 2), lags['Contrast' + str(cc)][1:],
+                             lagErrors['Contrast' + str(cc)][1:], label='Contrast: ' + str(cc))
+
+            else:
+                plt.errorbar(np.log(targetRadii_forOperating*2), lags['Contrast'+str(cc)], lagErrors['Contrast'+str(cc)], label='Contrast: '+str(cc))
+
+            #plt.plot(np.log(targetRadii*2), lags['Contrast'+str(cc)], label='Contrast: '+str(cc))
+            #plt.plot(np.log(targetRadii*2), lags['Contrast'+str(contrasts[1])], label='Contrast: '+str(contrasts[1]))
+        plt.xticks(np.log(targetRadii_forOperating*2), targetRadii_forOperating*2)
+        plt.xlabel('Stimulus Size (degrees)')
+        plt.ylabel('Kernel Lag (s)')
+        plt.legend()
+        plt.ylim([200, 500])
+        plt.savefig(basicTrialParams['analysisPath'] + '/horizontalContinuous/correlograms/pooled/' + subjectID + '_CRF_lags.png')
+
+        plt.close()
+
+        for cc in contrasts:
             plt.errorbar(np.log(targetRadii_forOperating*2), widths['Contrast'+str(cc)], widthErrors['Contrast'+str(cc)], label='Contrast: '+str(cc))
 
             #plt.plot(np.log(targetRadii*2), widths['Contrast'+str(cc)], label='Contrast: '+str(cc))

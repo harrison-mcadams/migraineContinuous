@@ -58,6 +58,11 @@ def fitSurroundSuppression(subjectID, **kwargs):
     else:
         skipC2S15 = False
 
+    if 'params' in kwargs:
+        inputtedParams = kwargs['params']
+    else:
+        inputtedParams = []
+
     if 'debug' in kwargs:
         debug = kwargs['debug']
     else:
@@ -72,6 +77,11 @@ def fitSurroundSuppression(subjectID, **kwargs):
         contrasts = kwargs['contrasts']
     else:
         contrasts = [2,99]
+
+    if 'useR0' in kwargs:
+        useR0 = kwargs['useR0']
+    else:
+        useR0 = False
 
     if 'sizes' in kwargs:
         sizes = kwargs['sizes']
@@ -160,6 +170,13 @@ def fitSurroundSuppression(subjectID, **kwargs):
             'criterion': [1,2000,10000],
                   'R0': [0,6,100]}
 
+        if inputtedParams == []:
+            test = 'do nothing'
+        else:
+            inputtedParamNames = list(inputtedParams.keys())
+            for ii in inputtedParamNames:
+                params[ii] = inputtedParams[ii]
+
         SRFParamLabels = ['alpha', 'beta', 'criterion', 'R0']
         CRFParamLabels = ['Ae', 'Ai', 'c50e', 'c50i', 'ne', 'ni']
 
@@ -211,6 +228,9 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
 
                     R = (Kes[sizeCounter] * Es[sizeCounter]) / (1 + Kis[sizeCounter]*Is[sizeCounter])
+
+                    if useR0:
+                        R = R + R0
 
                     if summaryStatistic == 'lags':
 
@@ -487,7 +507,8 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
 
 
-fitSurroundSuppression('pooled', contrasts=[2, 99], skipC2S15=False, summaryStatistic='lags')
+params = {'alpha': [1, 1, 1]}
+fitSurroundSuppression('migraine', contrasts=[2, 99], skipC2S15=True, summaryStatistic='lags', params=params)
 
 
 #print('end')

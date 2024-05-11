@@ -17,7 +17,7 @@ def makeGroupResponse(**kwargs):
     if 'loadBehavior' in kwargs:
         loadBehavior = kwargs['loadBehavior']
     else:
-        loadBehavior = True
+        loadBehavior = False
     load = loadBehavior
 
     sizes = [1.5, 3, 6, 12]
@@ -39,7 +39,7 @@ def makeGroupResponse(**kwargs):
     savePathRoot = os.path.expanduser('~') + '/Desktop/surroundSuppressionPTHA/analysis/'
     savePath = savePathRoot + '/' + 'horizontalContinuous' + '/correlograms/pooled/'
 
-    subjectIDs = makeSubjectList.makeSubjectList()
+    subjectIDs = makeSubjectList.makeSubjectList(makePooled=True)
 
     if load:
         with open(savePath + 'C' + contrastsString + '_S' + sizesString + '_pooledResults.pkl', 'rb') as f:
@@ -51,10 +51,12 @@ def makeGroupResponse(**kwargs):
 
 
 
-        peaks_2 = []
-        peaks_99 = []
 
+
+        groupsToPool = ['controls', 'migraine', 'ptha', 'pooled']
         groups = ['controls', 'migraine', 'ptha']
+
+
         measures = ['peaks', 'widths', 'lags', 'correlograms']
         measuresForSummary = ['peaks', 'widths', 'lags', 'correlograms', 'peaksSEM', 'widthsSEM', 'lagsSEM']
         groupsCounter = 1
@@ -62,13 +64,13 @@ def makeGroupResponse(**kwargs):
 
 
 
-        pooledResults = makeStruct.makeStruct([measures, groups, contrastFieldNames, sizeFieldNames])
-        summaryResults = makeStruct.makeStruct([measuresForSummary, groups, contrastFieldNames, sizeFieldNames])
+        pooledResults = makeStruct.makeStruct([measures, groupsToPool, contrastFieldNames, sizeFieldNames])
+        summaryResults = makeStruct.makeStruct([measuresForSummary, groupsToPool, contrastFieldNames, sizeFieldNames])
 
 
 
         ## Do the pooling
-        for group in groups:
+        for group in groupsToPool:
 
 
             for subjectID in subjectIDs[group]:
@@ -123,7 +125,7 @@ def makeGroupResponse(**kwargs):
                         plt.savefig(savePath + 'C'+str(contrast)+'_S'+str(size)+'_correlograms.png')
                         plt.close()
             else:
-                for group in groups:
+                for group in groupsToPool:
                     for contrast in contrasts:
                         meanVector = []
                         SEMVector = []
@@ -139,18 +141,20 @@ def makeGroupResponse(**kwargs):
                             summaryResults[measure+'SEM'][group]['Contrast'+str(contrast)]['Size'+str(size)] = SEMValue
 
 
-
-                        if contrast == 99:
-                            plt.errorbar(np.log(sizes), meanVector, SEMVector,
-                                    color=groupColors[group],
-                                    label=group,
-                                    linestyle=contrastLineStyles[str(contrast)]
-                                         )
+                        if group == 'pooled':
+                            test='doNothing'
                         else:
-                            plt.errorbar(np.log(sizes), meanVector, SEMVector,
-                                    color=groupColors[group],
-                                    linestyle=contrastLineStyles[str(contrast)]
-                                         )
+                            if contrast == 99:
+                                plt.errorbar(np.log(sizes), meanVector, SEMVector,
+                                        color=groupColors[group],
+                                        label=group,
+                                        linestyle=contrastLineStyles[str(contrast)]
+                                             )
+                            else:
+                                plt.errorbar(np.log(sizes), meanVector, SEMVector,
+                                        color=groupColors[group],
+                                        linestyle=contrastLineStyles[str(contrast)]
+                                             )
 
                 plt.xticks(np.log(sizes), sizes)
                 plt.xlabel('Stimulus Size (degrees)')

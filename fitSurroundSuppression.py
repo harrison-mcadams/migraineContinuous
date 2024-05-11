@@ -58,6 +58,11 @@ def fitSurroundSuppression(subjectID, **kwargs):
     else:
         skipC2S15 = False
 
+    if 'debug' in kwargs:
+        debug = kwargs['debug']
+    else:
+        debug = False
+
     if 'summaryStatistic' in kwargs:
         summaryStatistic = kwargs['summaryStatistic']
     else:
@@ -84,7 +89,7 @@ def fitSurroundSuppression(subjectID, **kwargs):
         useLog = False
 
     # Get the data
-    groups = ['migraine', 'controls', 'ptha']
+    groups = ['migraine', 'controls', 'ptha', 'pooled']
     if subjectID in groups:
         summaryResults, pooledResults = makeGroupResponse.makeGroupResponse()
         stats = {'mean': summaryResults[summaryStatistic][subjectID]}
@@ -298,7 +303,7 @@ def fitSurroundSuppression(subjectID, **kwargs):
     yLims = {'peaks': [-0.025, 0.25],
              'correlograms': [-0.025, 0.25],
              'widths': [0, 500],
-             'lags': [0, 750]}
+             'lags': [200, 500]}
     axes_ss.set_ylim(yLims[summaryStatistic])
 
     axes_ss.set_xticks(np.log(sizes), sizes)
@@ -332,7 +337,7 @@ def fitSurroundSuppression(subjectID, **kwargs):
     axes_crf.legend()
 
     savePathRoot = os.path.expanduser('~') + '/Desktop/surroundSuppressionPTHA/analysis/'
-    savePath = savePathRoot + '/' + 'horizontalContinuous' + '/modelFits/'
+    savePath = savePathRoot + '/' + 'horizontalContinuous' + '/modelFits/' + summaryStatistic +'/'
 
     contrastsString = ",".join(str(x) for x in contrasts)
     sizesString = ",".join(str(x) for x in sizes)
@@ -445,14 +450,16 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
     button.on_clicked(reset)
 
-    plt.show()
+    if debug:
+        plt.show()
+
 
     fig.savefig(savePath + 'C' + contrastsString + '_S' + sizesString + '_'+subjectID+'_tadinFit.png', bbox_inches="tight")
-    fig.close()
+    #fig.close()
 
 
 
-fitSurroundSuppression('controls', contrasts=[2, 99], skipC2S15=True, summaryStatistic='lags')
+fitSurroundSuppression('pooled', contrasts=[2, 99], skipC2S15=True, summaryStatistic='lags')
 
 
 #print('end')

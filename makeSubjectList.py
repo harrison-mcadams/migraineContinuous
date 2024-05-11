@@ -1,4 +1,4 @@
-def makeSubjectList():
+def makeSubjectList(**kwargs):
 
     subjectList = {'controls': ['SS_1074', 'SS_1075', 'SS_1076', 'SS_1077', 'SS_1078', 'SS_1079', 'SS_1080', 'SS_1081', 'SS_1082', 'SS_1083']}
     #subjectList = {'controls': ['SS_1074']}
@@ -6,6 +6,14 @@ def makeSubjectList():
     #subjectList.update({'migraine': ['SS_1084']})
     subjectList.update({'ptha': ['SS_1401', 'SS_1406', 'SS_1407', 'SS_1412', 'SS_1423', 'SS_1425', 'SS_1426', 'SS_1427']})
     #subjectList.update({'ptha': ['SS_1423']})
+
+    if 'makePooled' in kwargs:
+        makePooled = kwargs['makePooled']
+    else:
+        makePooled = False
+
+    if makePooled:
+        subjectList.update({'pooled': subjectList['ptha']+subjectList['migraine']+subjectList['controls']})
 
 
     return subjectList

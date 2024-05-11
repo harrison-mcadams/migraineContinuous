@@ -127,8 +127,23 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
         contrastCounter = 0
         for contrast in contrasts_vector:
-            peaks_matrix[sizeCounter,contrastCounter] = stats['mean']['Contrast' + str(contrast)]['Size' + str(size)]
-            peaks_vector2.append(stats['mean']['Contrast' + str(contrast)]['Size' + str(size)])
+
+            if skipC2S15:
+                if size == 1.5 and contrast == 2:
+                    peaks_vector2.append(np.nan)
+                else:
+                    peaks_vector2.append(stats['mean']['Contrast' + str(contrast)]['Size' + str(size)])
+
+            else:
+
+                peaks_matrix[sizeCounter,contrastCounter] = stats['mean']['Contrast' + str(contrast)]['Size' + str(size)]
+                peaks_vector2.append(stats['mean']['Contrast' + str(contrast)]['Size' + str(size)])
+            #peaks_vector2.append(stats['mean']['Contrast' + str(contrasts_vector[contrastCounter])]['Size' + str(sizes_vector[sizeCounter])])
+
+
+            contrastCounter = contrastCounter + 1
+
+        sizeCounter = sizeCounter + 1
 
 
     if model == 'tadin':
@@ -194,21 +209,18 @@ def fitSurroundSuppression(subjectID, **kwargs):
                 sizeCounter = 0
                 for size in sizes:
 
-                    contrastCounter = 0
-                    for contrast in contrasts:
 
-                        R = (Kes[contrastCounter] * Es[sizeCounter]) / (1 + Kis[contrastCounter]*Is[sizeCounter])
+                    R = (Kes[sizeCounter] * Es[sizeCounter]) / (1 + Kis[sizeCounter]*Is[sizeCounter])
 
-                        if summaryStatistic == 'lags':
+                    if summaryStatistic == 'lags':
 
-                            threshold = criterion/(R + R0)
+                        threshold = criterion/(R + R0)
 
-                            R = threshold
+                        R = threshold
 
-                        Rs.append(R)
+                    Rs.append(R)
 
 
-                        contrastCounter = contrastCounter + 1
                     sizeCounter = sizeCounter + 1
 
             return Rs
@@ -239,14 +251,20 @@ def fitSurroundSuppression(subjectID, **kwargs):
         lowerLimits = []
         for param in paramNames:
             startingValues.append(params[param][1])
-            upperLimits.append(params[param][2])
-            lowerLimits.append(params[param][0])
+
+            if params[param][2] == params[param][0]:
+                diff = 0.001
+                upperLimits.append(params[param][2]*(1+diff))
+                lowerLimits.append(params[param][0]*(1-diff))
+            else:
+                upperLimits.append(params[param][2])
+                lowerLimits.append(params[param][0])
 
 
 
 
 
-        popt, pcov = curve_fit(spatialSuppressionMechanisticModel, (sizes_vector,contrasts_vector), peaks_vector2, p0=startingValues, maxfev=10000, bounds=[lowerLimits, upperLimits])
+        popt, pcov = curve_fit(spatialSuppressionMechanisticModel, (sizes_vector,contrasts_vector), peaks_vector, p0=startingValues, maxfev=10000, bounds=[lowerLimits, upperLimits], check_finite=False)
 
         #[alpha0, beta1, Ae2, Ai3, ne4, ni5, c50e6, c50i7, R0, C]
 
@@ -266,12 +284,22 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
     if useLog:
         predictionSizes = predictionSizes[1:-1]
-    y_pred = spatialSuppressionMechanisticModel((predictionSizes,contrasts), *popt)
-    y_pred = y_pred.reshape(len(predictionSizes), len(contrasts))
+
+    sizes_vector_forPlotting = []
+    contrasts_vector_forPlotting = []
+
+    for contrast in contrasts:
+        for size in predictionSizes:
+
+                sizes_vector_forPlotting.append(size)
+                contrasts_vector_forPlotting.append(contrast)
+
+    y_pred = spatialSuppressionMechanisticModel((sizes_vector_forPlotting,contrasts_vector_forPlotting), *popt)
+    y_pred = y_pred.reshape(len(contrasts), len(predictionSizes))
 
     y_pred_veridical = spatialSuppressionMechanisticModel((sizes_vector,contrasts_vector), *popt)
 
-    r2 = r2_score(peaks_vector2, y_pred_veridical)
+    r2 = r2_score(peaks_vector, y_pred_veridical)
 
     fig, axes = plt.subplots(1, 3)
 
@@ -288,7 +316,7 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
 
 
-        ss[str(contrast)], = axes_ss.plot(np.log(predictionSizes), y_pred[:,counter], color='red')
+        ss[str(contrast)], = axes_ss.plot(np.log(predictionSizes), y_pred[counter], color='red')
         #plt.plot(np.log(sizes), meanVector, label=str(contrast)+'%')
         axes_ss.errorbar(np.log(sizes), meanVector, SEMVector,
                      label='Contrast: ' + str(contrast), ls='none')
@@ -459,7 +487,7 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
 
 
-fitSurroundSuppression('pooled', contrasts=[2, 99], skipC2S15=True, summaryStatistic='lags')
+fitSurroundSuppression('pooled', contrasts=[2, 99], skipC2S15=False, summaryStatistic='lags')
 
 
 #print('end')

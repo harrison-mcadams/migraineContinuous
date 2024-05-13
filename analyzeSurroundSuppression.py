@@ -1,30 +1,89 @@
-import analyzeContinuous
+import fitSurroundSuppression
+import makeSubjectList
+import makeStruct
+import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import os
 
-subjectID = '500ms_varyContrast'
-experimentName = 'battista'
-contrasts = [2, 50, 90]
-spatialFrequency = 1
-nTrials = 5
+summaryStatistic = 'lags'
+normalize = True
 
-centerPeaks = []
-surroundPeaks = []
-for cc in contrasts:
-    for tt in range(nTrials):
-        analyzeContinuous.analyzeContinuous(subjectID, experimentName, cc, spatialFrequency, [tt+1], '_trial'+str(tt+1))
+pooledFitParams = fitSurroundSuppression.fitSurroundSuppression('pooled', skipC2S15=True, summaryStatistic=summaryStatistic, normalize=normalize)
+
+paramsToLock = ['R0', 'criterion', 'ni', 'ne', 'c50i', 'c50e']
+#paramsToLock = ['R0', 'criterion']
 
 
-    centerPeak, centerLag, centerWidth, surroundPeak, surroundLag, surroundWidth = analyzeContinuous.analyzeContinuous(subjectID, experimentName, cc, spatialFrequency, 'all', '')
-    centerPeaks.append(centerPeak)
-    surroundPeaks.append(surroundPeak)
+params = makeStruct.makeStruct([paramsToLock])
+
+for param in paramsToLock:
+    params[param] = [pooledFitParams[param], pooledFitParams[param], pooledFitParams[param]]
 
 
-plt.plot(np.log(contrasts), centerPeaks, label='Center')
-plt.plot(np.log(contrasts), surroundPeaks, label='Surround')
-plt.legend()
-plt.xlabel('Contrast (%)')
-plt.ylabel('Kernel Peak (r)')
-plt.savefig(os.path.expanduser('~') + '/Desktop/migraineContinuous/analysis/' + experimentName + '/' + subjectID + '/CRF.png')
-plt.xticks(np.log(contrasts), contrasts)
+#fitSurroundSuppression.fitSurroundSuppression('SS_1423', skipC2S15=True, summaryStatistic='lags', params=params, debug=True)
+subjectIDs = makeSubjectList.makeSubjectList(makePooled=True)
+
+groups = ['controls', 'ptha', 'migraine']
+statsToPlot = ['Ae', 'Ai', 'alpha', 'beta', 'beta:alpha', 'r2', 'Ai:Ae']
+
+pooledFitParams = makeStruct.makeStruct([groups, statsToPlot])
+
+for group in groups:
+    groupFitParams = fitSurroundSuppression.fitSurroundSuppression(group, skipC2S15=True, summaryStatistic=summaryStatistic, params=params, normalize=normalize)
+
+for subjectID in subjectIDs['pooled']:
+    subjectFitParams = fitSurroundSuppression.fitSurroundSuppression(subjectID, skipC2S15=True, summaryStatistic=summaryStatistic, params=params, normalize=normalize)
+    #subjectFitParams = fitSurroundSuppression.fitSurroundSuppression(subjectID, skipC2S15=True, summaryStatistic=summaryStatistic)
+
+
+    # Identify the group
+    for potentialGroup in groups:
+        if subjectID in subjectIDs[potentialGroup]:
+
+            subjectGroup = potentialGroup
+
+    for stat in statsToPlot:
+
+        if stat == 'beta:alpha':
+
+            statToStash = subjectFitParams['beta']/subjectFitParams['alpha']
+
+        elif stat == 'Ai:Ae':
+            statToStash = subjectFitParams['Ai'] / subjectFitParams['Ae']
+
+        else:
+            statToStash = subjectFitParams[stat]
+
+        pooledFitParams[subjectGroup][stat].append(statToStash)
+
+for stat in statsToPlot:
+    # Sample data (replace with your actual arrays)
+    array1 = pooledFitParams['controls'][stat]
+    array2 = pooledFitParams['migraine'][stat]
+    array3 = pooledFitParams['ptha'][stat]
+
+    # Create a DataFrame with labels for clarity
+    data = pd.DataFrame({
+        "Group": ["Controls"] * len(array1) + ["Migraine"] * len(array2) + ["PTHA"] * len(array3),
+        stat: array1 + array2 + array3
+    })
+
+    # Create a beeswarm plot
+    sns.boxplot(x="Group", y=stat, showmeans=True, data=data, boxprops={'fill': None})
+
+    sns.swarmplot(x="Group", y=stat, data=data)
+
+    plt.title('Medians: Controls = '+str(round(np.median(pooledFitParams['controls'][stat]),3))+', Migraine = '+str(round(np.median(pooledFitParams['migraine'][stat]),3))+', PTHA = '+str(round(np.median(pooledFitParams['ptha'][stat]),3)))
+
+    savePathRoot = os.path.expanduser('~') + '/Desktop/surroundSuppressionPTHA/analysis/'
+    savePath = savePathRoot + '/' + 'horizontalContinuous' + '/modelFits/' + summaryStatistic + '/'
+    plt.savefig(savePath + 'groups_' + stat + '.png')
+    plt.close()
+
+    # Show the plot
+
+
+
+test='testytest'

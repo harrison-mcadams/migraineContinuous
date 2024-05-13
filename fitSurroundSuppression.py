@@ -83,6 +83,16 @@ def fitSurroundSuppression(subjectID, **kwargs):
     else:
         useR0 = False
 
+    if 'useCriterion' in kwargs:
+        useCriterion = kwargs['useCriterion']
+    else:
+        useCriterion = False
+
+    if 'normalize' in kwargs:
+        normalize = kwargs['normalize']
+    else:
+        normalize = False
+
     if 'sizes' in kwargs:
         sizes = kwargs['sizes']
     else:
@@ -122,7 +132,10 @@ def fitSurroundSuppression(subjectID, **kwargs):
                 if size == 1.5 and contrast == 2:
                     test='badCondition'
                 else:
-                    peaks_vector.append(stats['mean']['Contrast'+str(contrast)]['Size'+str(size)])
+                    if normalize:
+                        peaks_vector.append(stats['mean']['Contrast'+str(contrast)]['Size'+str(size)]/stats['mean']['Contrast99']['Size1.5'])
+                    else:
+                        peaks_vector.append(stats['mean']['Contrast'+str(contrast)]['Size'+str(size)])
                     sizes_vector.append(size)
                     contrasts_vector.append(contrast)
             else:
@@ -159,16 +172,16 @@ def fitSurroundSuppression(subjectID, **kwargs):
     if model == 'tadin':
 
         # define the model params
-        params = {'Ae': [0, 100, 1000],
-            'Ai': [0, 100, 1000],
-            'alpha': [0,1,10],
-            'beta': [0,3,10],
-            'c50e': [0, 0.1, 2],
-            'c50i': [0, 0.1, 2],
-            'ne': [0, 3, 7],
-            'ni': [0, 5, 7],
+        params = {'Ae': [0, 80, 10000],
+            'Ai': [0, 73, 10000],
+            'alpha': [0,2.6,10],
+            'beta': [0,4.08,10],
+            'c50e': [0, 0.078, 2],
+            'c50i': [0, 0.05, 2],
+            'ne': [0, 2.66, 7],
+            'ni': [0, 5.441, 7],
             'criterion': [1,2000,10000],
-                  'R0': [0,6,100]}
+                  'R0': [0,6,200]}
 
         if inputtedParams == []:
             test = 'do nothing'
@@ -232,6 +245,9 @@ def fitSurroundSuppression(subjectID, **kwargs):
                     if useR0:
                         R = R + R0
 
+                    if useCriterion:
+                        R = R * criterion
+
                     if summaryStatistic == 'lags':
 
                         threshold = criterion/(R + R0)
@@ -284,7 +300,7 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
 
 
-        popt, pcov = curve_fit(spatialSuppressionMechanisticModel, (sizes_vector,contrasts_vector), peaks_vector, p0=startingValues, maxfev=10000, bounds=[lowerLimits, upperLimits], check_finite=False)
+        popt, pcov = curve_fit(spatialSuppressionMechanisticModel, (sizes_vector,contrasts_vector), peaks_vector, p0=startingValues, maxfev=1000000, bounds=[lowerLimits, upperLimits], check_finite=False)
 
         #[alpha0, beta1, Ae2, Ai3, ne4, ni5, c50e6, c50i7, R0, C]
 
@@ -320,6 +336,7 @@ def fitSurroundSuppression(subjectID, **kwargs):
     y_pred_veridical = spatialSuppressionMechanisticModel((sizes_vector,contrasts_vector), *popt)
 
     r2 = r2_score(peaks_vector, y_pred_veridical)
+    fittedParams.update({'r2': r2})
 
     fig, axes = plt.subplots(1, 3)
 
@@ -331,8 +348,12 @@ def fitSurroundSuppression(subjectID, **kwargs):
         meanVector = []
         SEMVector = []
         for size in sizes:
-            meanVector.append(stats['mean']['Contrast'+str(contrast)]['Size'+str(size)])
-            SEMVector.append(stats['SEM']['Contrast'+str(contrast)]['Size'+str(size)])
+            if normalize:
+                meanVector.append(stats['mean']['Contrast'+str(contrast)]['Size'+str(size)]/stats['mean']['Contrast99']['Size1.5'])
+                SEMVector.append(stats['SEM']['Contrast'+str(contrast)]['Size'+str(size)]/stats['mean']['Contrast99']['Size1.5'])
+            else:
+                meanVector.append(stats['mean']['Contrast'+str(contrast)]['Size'+str(size)])
+                SEMVector.append(stats['SEM']['Contrast'+str(contrast)]['Size'+str(size)])
 
 
 
@@ -352,7 +373,11 @@ def fitSurroundSuppression(subjectID, **kwargs):
              'correlograms': [-0.025, 0.25],
              'widths': [0, 500],
              'lags': [200, 500]}
-    axes_ss.set_ylim(yLims[summaryStatistic])
+
+    if normalize:
+        test='doNothing'
+    else:
+        axes_ss.set_ylim(yLims[summaryStatistic])
 
     axes_ss.set_xticks(np.log(sizes), sizes)
     axes_ss.set_xlabel('Stimulus Size (degrees)')
@@ -457,11 +482,19 @@ def fitSurroundSuppression(subjectID, **kwargs):
         Kes, Kis = calcCRF(predictionContrasts, CRFSliders['Ae'].val, CRFSliders['Ai'].val, CRFSliders['c50e'].val,
                            CRFSliders['c50i'].val, CRFSliders['ne'].val, CRFSliders['ni'].val)
 
-        Rs = spatialSuppressionMechanisticModel((predictionSizes, contrasts), CRFSliders['Ae'].val, CRFSliders['Ai'].val,
+        Rs = spatialSuppressionMechanisticModel((sizes_vector_forPlotting,contrasts_vector_forPlotting), CRFSliders['Ae'].val, CRFSliders['Ai'].val,
                                                 SRFSliders['alpha'].val, SRFSliders['beta'].val, CRFSliders['c50e'].val,
                                                 CRFSliders['c50i'].val, CRFSliders['ne'].val, CRFSliders['ni'].val, SRFSliders['criterion'].val, SRFSliders['R0'].val)
 
-        Rs = Rs.reshape(len(predictionSizes), len(contrasts))
+        Rs = Rs.reshape(len(contrasts), len(predictionSizes))
+
+        y_pred_veridical = spatialSuppressionMechanisticModel((sizes_vector, contrasts_vector), CRFSliders['Ae'].val, CRFSliders['Ai'].val,
+                                                SRFSliders['alpha'].val, SRFSliders['beta'].val, CRFSliders['c50e'].val,
+                                                CRFSliders['c50i'].val, CRFSliders['ne'].val, CRFSliders['ni'].val, SRFSliders['criterion'].val, SRFSliders['R0'].val)
+
+        r2 = r2_score(peaks_vector, y_pred_veridical)
+        axes_ss.set_title('R2 = ' + str(round(r2, 4)))
+
 
         srf_e.set_ydata(Es)
         srf_i.set_ydata(Is)
@@ -473,7 +506,7 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
         contrastCounter = 0
         for contrast in contrasts:
-            ss[str(contrast)].set_ydata(Rs[:, contrastCounter])
+            ss[str(contrast)].set_ydata(Rs[contrastCounter])
             contrastCounter = contrastCounter + 1
 
         fig.canvas.draw_idle()
@@ -503,12 +536,14 @@ def fitSurroundSuppression(subjectID, **kwargs):
 
 
     fig.savefig(savePath + 'C' + contrastsString + '_S' + sizesString + '_'+subjectID+'_tadinFit.png', bbox_inches="tight")
-    #fig.close()
+    plt.close()
+
+    return fittedParams
 
 
 
-params = {'alpha': [1, 1, 1]}
-fitSurroundSuppression('migraine', contrasts=[2, 99], skipC2S15=True, summaryStatistic='lags', params=params)
+#params = {'alpha': [1, 1, 1]}
+#fitSurroundSuppression('migraine', contrasts=[2, 99], skipC2S15=True, summaryStatistic='lags', params=params)
 
 
 #print('end')

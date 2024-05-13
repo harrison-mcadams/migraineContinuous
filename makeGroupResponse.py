@@ -90,7 +90,8 @@ def makeGroupResponse(**kwargs):
 
         groupColors = {'controls': 'black',
                        'migraine': 'red',
-                       'ptha': 'blue'}
+                       'ptha': 'blue',
+                       'pooled': 'green'}
 
         contrastLineStyles = {'2': '--',
                               '99': '-'}
@@ -98,7 +99,7 @@ def makeGroupResponse(**kwargs):
         yLims = {'peaks': [-0.025, 0.25],
                  'correlograms': [-0.025, 0.25],
                  'widths': [0, 500],
-                 'lags': [0, 750]}
+                 'lags': [250, 400]}
 
         measuresYLabel = {'peaks': 'Kernel Peak (r)',
                           'lags': 'Lag (ms)',
@@ -114,9 +115,15 @@ def makeGroupResponse(**kwargs):
                 test = 'yuck'
                 for contrast in contrasts:
                     for size in sizes:
-                        for group in groups:
+                        for group in groupsToPool:
                             meanCorrelogram = np.mean(pooledResults['correlograms'][group]['Contrast'+str(contrast)]['Size'+str(size)], 0)
-                            plt.plot(correlograms['timebase'], meanCorrelogram, label=group, color=groupColors[group])
+                            if group == 'pooled':
+                                test ='doNothing'
+                            else:
+                                plt.plot(correlograms['timebase'], meanCorrelogram, label=group, color=groupColors[group])
+
+                            summaryResults[measure][group]['Contrast'+str(contrast)]['Size'+str(size)] = meanCorrelogram
+
 
                         plt.xlabel('Time (s)')
                         plt.ylabel('Cross Correlation')
@@ -134,8 +141,12 @@ def makeGroupResponse(**kwargs):
                             meanValue = np.mean((pooledResults[measure][group]['Contrast'+str(contrast)]['Size'+str(size)]))
                             SEMValue = np.std((pooledResults[measure][group]['Contrast'+str(contrast)]['Size'+str(size)]))/((len(pooledResults[measure][group]['Contrast'+str(contrast)]['Size'+str(size)])**0.5))
 
-                            meanVector.append(meanValue)
-                            SEMVector.append(SEMValue)
+                            if size == 1.5 and contrast == 2:
+                                meanVector.append(np.nan)
+                                SEMVector.append(np.nan)
+                            else:
+                                meanVector.append(meanValue)
+                                SEMVector.append(SEMValue)
 
                             summaryResults[measure][group]['Contrast'+str(contrast)]['Size'+str(size)] = meanValue
                             summaryResults[measure+'SEM'][group]['Contrast'+str(contrast)]['Size'+str(size)] = SEMValue
@@ -164,8 +175,95 @@ def makeGroupResponse(**kwargs):
                 plt.savefig(savePath + 'groups_CRF_'+measure+'.png')
                 plt.close()
 
+        for measure in measures:
+            if measure == 'correlograms':
+                test = 'yuck'
+                for contrast in contrasts:
+                    for size in sizes:
+                        for group in groupsToPool:
+                            meanCorrelogram = np.mean(pooledResults['correlograms'][group]['Contrast'+str(contrast)]['Size'+str(size)], 0)
+                            if group == 'pooled':
+                                test ='doNothing'
+                            else:
+                                plt.plot(correlograms['timebase'], meanCorrelogram, label=group, color=groupColors[group])
+
+                            summaryResults[measure][group]['Contrast'+str(contrast)]['Size'+str(size)] = meanCorrelogram
 
 
+                        plt.xlabel('Time (s)')
+                        plt.ylabel('Cross Correlation')
+                        plt.legend()
+                        plt.ylim(yLims[measure])
+                        plt.savefig(savePath + 'C'+str(contrast)+'_S'+str(size)+'_correlograms.png')
+                        plt.close()
+            else:
+                for group in groupsToPool:
+                    for contrast in contrasts:
+                        meanVector = []
+                        SEMVector = []
+                        for size in sizes:
+
+                            meanValue = np.mean((pooledResults[measure][group]['Contrast'+str(contrast)]['Size'+str(size)]))
+                            SEMValue = np.std((pooledResults[measure][group]['Contrast'+str(contrast)]['Size'+str(size)]))/((len(pooledResults[measure][group]['Contrast'+str(contrast)]['Size'+str(size)])**0.5))
+
+                            if size == 1.5 and contrast == 2:
+                                meanVector.append(np.nan)
+                                SEMVector.append(np.nan)
+                            else:
+                                meanVector.append(meanValue)
+                                SEMVector.append(SEMValue)
+
+                            summaryResults[measure][group]['Contrast'+str(contrast)]['Size'+str(size)] = meanValue
+                            summaryResults[measure+'SEM'][group]['Contrast'+str(contrast)]['Size'+str(size)] = SEMValue
+
+
+
+                        if contrast == 99:
+                            plt.errorbar(np.log(sizes), meanVector, SEMVector,
+                                    color=groupColors[group],
+                                    label=group,
+                                    linestyle=contrastLineStyles[str(contrast)]
+                                         )
+                        else:
+                            plt.errorbar(np.log(sizes), meanVector, SEMVector,
+                                    color=groupColors[group],
+                                    linestyle=contrastLineStyles[str(contrast)]
+                                         )
+
+                    plt.xticks(np.log(sizes), sizes)
+                    plt.xlabel('Stimulus Size (degrees)')
+                    plt.ylabel(measuresYLabel[measure])
+                    plt.legend()
+                    plt.ylim(yLims[measure])
+                    plt.savefig(savePath + group + '_SRFs_'+measure+'.png')
+                    plt.close()
+
+
+        for group in groupsToPool:
+            fig, axes = plt.subplots(1, len(contrasts))
+
+            contrastCounter = 0
+            for contrast in contrasts:
+
+                sizeCounter = 0
+                for size in sizes:
+                    axes[contrastCounter].plot(correlograms['timebase'], summaryResults['correlograms'][group]['Contrast'+str(contrast)]['Size'+str(size)], label=str(size), color=groupColors[group], alpha=(sizeCounter+1)/(len(sizes)+1))
+                    sizeCounter = sizeCounter + 1
+
+                axes[contrastCounter].set_ylim(yLims['correlograms'])
+                axes[contrastCounter].set_xlabel('Time (s)')
+                axes[contrastCounter].set_ylabel('Correlation')
+                axes[contrastCounter].set_title('Contrast '+ str(contrast))
+                axes[contrastCounter].legend()
+
+
+
+
+
+                contrastCounter = contrastCounter+1
+
+            fig.savefig(savePath + group + '_combinedCorrelograms.png')
+            plt.close()
 
         results = {
                     'pooledResults': pooledResults,
